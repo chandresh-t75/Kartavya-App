@@ -1,63 +1,102 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Platform,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+  ScrollView,
+} from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { HelloWave } from "@/components/HelloWave";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+// import Logo from "../../assets/images/kartavya.png"
+import HomeSlider from "@/components/utils/HomeSlider";
+import OurDrives from "@/components/utils/OurDrives";
+import MissionVision from "@/components/utils/MissionVision";
+import { maroonColorLight } from "@/constants/Colors";
 
+const Logo="https://res.cloudinary.com/doagrwjza/image/upload/v1733722707/kartavya_lpt1hh.png"
 export default function HomeScreen() {
+  const navigation = useNavigation();
+  const { width } = Dimensions.get("window");
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white", width: width }}>
+      <ScrollView>
+        <ThemedView style={{ marginBottom: 60, gap: 10 }}>
+          <ThemedView
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              paddingTop: 10,
+              paddingBottom: 10,
+              paddingHorizontal: 20,
+              borderBottomWidth: 1,
+              borderBottomColor: "#e7e7e7",
+              backgroundColor: "#F6F5F5"
+
+            }}
+          >
+            <ThemedView
+              style={{ flexDirection: "row", justifyContent: "center", gap: 14, backgroundColor: "#F6F5F5" }}
+              className=" flex flex-row justify-center items-center"
+            >
+              <Image
+                source={{uri:Logo}}
+                style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: "#F6F5F5" }}
+              />
+              <ThemedView style={{ gap: 0, backgroundColor: "#F6F5F5" }}>
+                <ThemedText type="title" className="text-[#31d1c9]">
+                  KARTAVYA
+                </ThemedText>
+                <ThemedText style={{ marginTop: -10, fontSize: 12, color: "#777474" }}>
+                  For the society
+                </ThemedText>
+
+              </ThemedView>
+
+            </ThemedView>
+          </ThemedView>
+          <ThemedView style={{ marginVertical: 10, }}>
+            <HomeSlider />
+          </ThemedView>
+          <ThemedView style={{ paddingHorizontal: 20, }}>
+            <ThemedView style={{ flexDirection: "row", gap: 2 }}>
+              <ThemedText type="defaultSemiBold" style={{color:maroonColorLight}}>
+                Give,
+              </ThemedText>
+              <ThemedText type="defaultSemiBold" style={{color:maroonColorLight}}>
+                Change Lives,
+              </ThemedText>
+              <ThemedText type="defaultSemiBold" style={{color:maroonColorLight}}>
+                Make Impact
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+
+          <ThemedView>
+            <OurDrives />
+          </ThemedView>
+          <ThemedView>
+            {/* <OurDrives /> */}
+            <MissionVision />
+          </ThemedView>
+        </ThemedView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   stepContainer: {
@@ -69,6 +108,6 @@ const styles = StyleSheet.create({
     width: 290,
     bottom: 0,
     left: 0,
-    position: 'absolute',
+    position: "absolute",
   },
 });
