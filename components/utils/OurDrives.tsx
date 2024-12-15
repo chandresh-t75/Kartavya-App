@@ -5,6 +5,7 @@ import { ThemedText } from '../ThemedText'
 import Drive1 from '../../assets/images/slider3.svg'
 import Drive2 from '../../assets/images/slider2.svg'
 import Drive3 from '../../assets/images/slider1.svg'
+import { lightPurple } from '@/constants/Colors'
 
 
 
@@ -39,16 +40,16 @@ type Props = {}
 
 const OurDrives = (props: Props) => {
     return (
-        <ThemedView className='mt-[10px]' style={{ }}>
+        <ThemedView style={{paddingVertical:10,backgroundColor:lightPurple}}>
             <ThemedText type="subtitle" style={{ marginBottom: 10 ,paddingLeft: 20,color:"#201658" }}>Our Drives</ThemedText>
-            <ThemedView  >
+            <ThemedView  style={{backgroundColor:lightPurple}}>
                 <ScrollView horizontal
                     showsHorizontalScrollIndicator={false}
                     style={{paddingLeft:20,paddingRight:20}}>
                     {Drives.map(drive => (
                         <View key={drive.id} style={{ marginRight:20,flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                             <ThemedView style={{
-                                width: 200, height: 150, borderRadius: 16, overflow: 'hidden', justifyContent: "center", alignItems: "center", backgroundColor: "#fff", // Required for shadows to render correctly
+                                width: 200, height: 150, borderRadius: 16, overflow: 'hidden', justifyContent: "center", alignItems: "center",  // Required for shadows to render correctly
                                 shadowColor: "#000",
                                 shadowOffset: { width: 0, height: 4 },
                                 shadowOpacity: 0.3,

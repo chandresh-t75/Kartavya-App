@@ -5,18 +5,18 @@ import { ThemedText } from '../ThemedText'
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
 import { Link } from 'expo-router';
-import { lightPurple } from '@/constants/Colors';
+import { lightBlue, lightPurple } from '@/constants/Colors';
 
 type Props = {}
 
 const MissionVision = (props: Props) => {
     const navigation = useNavigation();
     return (
-        <ThemedView style={{ paddingHorizontal: 0, paddingTop: 10, backgroundColor:lightPurple }}>
-            <ThemedView style={{ paddingHorizontal: 20, marginVertical: 20, paddingVertical: 20 }}>
+        <ThemedView style={{ paddingHorizontal: 0,  }}>
+            <ThemedView style={{ paddingHorizontal: 20, marginVertical: 20, paddingVertical: 20 ,backgroundColor:lightBlue}}>
                 <ThemedText type="subtitle" style={{ color: "#201658", marginBottom: 10 }}>About Us</ThemedText>
                 <ThemedText type="default" style={{ color: "#EC8305" }}>To create a world where people are empowered to make a difference, by giving, change, and making impact.</ThemedText>
-                <ThemedView style={{ flex: 1, flexDirection: "row", gap: 20, marginTop: 10, alignContent: "center" }}>
+                <ThemedView style={{ flex: 1, flexDirection: "row", gap: 20, marginTop: 10, alignContent: "center",backgroundColor:lightBlue }}>
                     <Link
                         href="/explore"
                         style={{

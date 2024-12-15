@@ -80,10 +80,10 @@ export default function HomeScreen() {
             </ThemedView>
           </ThemedView>
 
-          <ThemedView>
+          <ThemedView style={{}}>
             <OurDrives />
           </ThemedView>
-          <ThemedView style={{backgroundColor:lightPurple,paddingBottom:20}}>
+          <ThemedView style={{paddingBottom:20}}>
             {/* <OurDrives /> */}
             <MissionVision />
           </ThemedView>
