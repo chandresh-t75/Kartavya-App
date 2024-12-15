@@ -19,7 +19,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import HomeSlider from "@/components/utils/HomeSlider";
 import OurDrives from "@/components/utils/OurDrives";
 import MissionVision from "@/components/utils/MissionVision";
-import { maroonColorLight } from "@/constants/Colors";
+import { lightBlue, lightPurple, maroonColorLight } from "@/constants/Colors";
 
 const Logo="https://res.cloudinary.com/doagrwjza/image/upload/v1733722707/kartavya_lpt1hh.png"
 export default function HomeScreen() {
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", width: width }}>
       <ScrollView>
-        <ThemedView style={{ marginBottom: 60, gap: 10 }}>
+        <ThemedView style={{}}>
           <ThemedView
             style={{
               flexDirection: "row",
@@ -39,19 +39,19 @@ export default function HomeScreen() {
               paddingHorizontal: 20,
               borderBottomWidth: 1,
               borderBottomColor: "#e7e7e7",
-              backgroundColor: "#F6F5F5"
+              backgroundColor:lightBlue
 
             }}
           >
             <ThemedView
-              style={{ flexDirection: "row", justifyContent: "center", gap: 14, backgroundColor: "#F6F5F5" }}
+              style={{ flexDirection: "row", justifyContent: "center", gap: 14, backgroundColor:lightBlue }}
               className=" flex flex-row justify-center items-center"
             >
               <Image
                 source={{uri:Logo}}
-                style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: "#F6F5F5" }}
+                style={{ width: 50, height: 50, borderRadius: 50,  }}
               />
-              <ThemedView style={{ gap: 0, backgroundColor: "#F6F5F5" }}>
+              <ThemedView style={{ gap: 0,backgroundColor:lightBlue }}>
                 <ThemedText type="title" className="text-[#31d1c9]">
                   KARTAVYA
                 </ThemedText>
@@ -63,10 +63,10 @@ export default function HomeScreen() {
 
             </ThemedView>
           </ThemedView>
-          <ThemedView style={{ marginVertical: 10, }}>
+          <ThemedView style={{ paddingVertical: 10}}>
             <HomeSlider />
           </ThemedView>
-          <ThemedView style={{ paddingHorizontal: 20, }}>
+          <ThemedView style={{ padding: 20, }}>
             <ThemedView style={{ flexDirection: "row", gap: 2 }}>
               <ThemedText type="defaultSemiBold" style={{color:maroonColorLight}}>
                 Give,
@@ -83,7 +83,7 @@ export default function HomeScreen() {
           <ThemedView>
             <OurDrives />
           </ThemedView>
-          <ThemedView>
+          <ThemedView style={{backgroundColor:lightPurple,paddingBottom:20}}>
             {/* <OurDrives /> */}
             <MissionVision />
           </ThemedView>

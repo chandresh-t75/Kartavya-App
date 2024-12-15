@@ -16,7 +16,7 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.chandresh_123.kartavya"
+      "package":"com.chandresh_123.kartavya"
     },
     "web": {
       "bundler": "metro",

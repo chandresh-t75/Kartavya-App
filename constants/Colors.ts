@@ -11,6 +11,10 @@ export const orColorLight ="#F9E2AF"
 export const blueColorDark="#201658"
 export const maroonColorLight="#A25772"
 export const orangeDarkColor="#EC8305"
+export const lightBlue="#F1FAFE"
+export const lightOrange="#FDF7E8"
+export const lightGreen="#E8FFE7"
+export const lightPurple="#F8ECFE"
 
 export const Colors = {
   light: {

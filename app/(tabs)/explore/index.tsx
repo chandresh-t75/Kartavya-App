@@ -5,8 +5,11 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { useNavigation, useRouter } from 'expo-router';
+
 
 export default function TabTwoScreen() {
+   const router=useRouter();
   const [isDrawerVisible, setDrawerVisible] = useState(false);
   
 
@@ -31,7 +34,7 @@ export default function TabTwoScreen() {
       <ThemedText>This app includes example code to help you get started.</ThemedText>
 
       {/* TouchableOpacity to open the bottom drawer */}
-      <TouchableOpacity onPress={toggleDrawer}>
+      <TouchableOpacity onPress={() => router.push("/explore/campaignDetails")}>
         <ThemedView style={styles.infoButton}>
           
           <ThemedText>About this app</ThemedText>

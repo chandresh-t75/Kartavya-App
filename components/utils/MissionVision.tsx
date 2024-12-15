@@ -5,13 +5,14 @@ import { ThemedText } from '../ThemedText'
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
 import { Link } from 'expo-router';
+import { lightPurple } from '@/constants/Colors';
 
 type Props = {}
 
 const MissionVision = (props: Props) => {
     const navigation = useNavigation();
     return (
-        <ThemedView style={{ paddingHorizontal: 0, marginTop: 10, backgroundColor: "#F6F5F5" }}>
+        <ThemedView style={{ paddingHorizontal: 0, paddingTop: 10, backgroundColor:lightPurple }}>
             <ThemedView style={{ paddingHorizontal: 20, marginVertical: 20, paddingVertical: 20 }}>
                 <ThemedText type="subtitle" style={{ color: "#201658", marginBottom: 10 }}>About Us</ThemedText>
                 <ThemedText type="default" style={{ color: "#EC8305" }}>To create a world where people are empowered to make a difference, by giving, change, and making impact.</ThemedText>
@@ -40,7 +41,7 @@ const MissionVision = (props: Props) => {
                 </ThemedView>
 
             </ThemedView>
-            <ThemedView style={{ gap: 20, paddingVertical: 20, backgroundColor: "#F6F5F5" }}>
+            <ThemedView style={{ gap: 20, paddingVertical: 20, backgroundColor:lightPurple }}>
                 <Animatable.View animation="pulse" iterationCount="infinite" iterationDelay={500} direction="alternate" style={{ backgroundColor: "#F9E2AF", width: 300, paddingHorizontal: 20, paddingVertical: 4, borderBottomEndRadius: 20, borderTopEndRadius: 20 }} >
                     <ThemedText type="subtitle" style={{ color: "#201658" }}>Our Slogan</ThemedText>
                     <ThemedText type="default" style={{ color: "#201658" }}>Give,Change Lives, Makes Impact</ThemedText>

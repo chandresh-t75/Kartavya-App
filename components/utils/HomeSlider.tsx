@@ -6,28 +6,34 @@ import Slider1 from '../../assets/images/slider1.svg';
 import Slider2 from '../../assets/images/slider2.svg';
 import Slider3 from '../../assets/images/slider3.svg';
 
+// https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/balloons-charity-colorful-colourful_wb9g6x.jpg
+// https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/money-hands-message-quote_xa5vmx.jpg
+// https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_327392447_VT7K8QUTmTZWI3UbeCsYdlpU5Qr508vL_zlyb72.jpg
+// https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/alliance-american-arms-blue_witzgj.jpg
+// https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_103149261_I53FAObzpAiNmB82R1TCeBfGcOJRsTW1_fdxya1.jpg
+// https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_576126362_ll2tqdvXs27cDRRovBTmFCkPM9iX68iL_o6udgo.jpg
 
 const SliderImages = [
   {
       id: 1,
-      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1709576294/samples/balloons.jpg",
+      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/money-hands-message-quote_xa5vmx.jpg",
 
       
   },
   {
       id: 2,
-      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1709576304/cld-sample-4.jpg",
+      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_576126362_ll2tqdvXs27cDRRovBTmFCkPM9iX68iL_o6udgo.jpg",
 
      
   },
   {
       id: 3,
-      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1726565253/f6tyz0prghhzbunghjax.jpg",
+      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/alliance-american-arms-blue_witzgj.jpg",
     
   }
   , {
       id: 4,
-      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1709576303/cld-sample-2.jpg",
+      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_103149261_I53FAObzpAiNmB82R1TCeBfGcOJRsTW1_fdxya1.jpg",
 
       
   }
