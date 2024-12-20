@@ -55,7 +55,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="donate/index"
+        name="donate"
         options={{
           title: 'Donate',
           tabBarIcon: ({ color }) => (

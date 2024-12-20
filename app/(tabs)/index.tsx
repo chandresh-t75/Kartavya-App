@@ -84,7 +84,6 @@ export default function HomeScreen() {
             <OurDrives />
           </ThemedView>
           <ThemedView style={{paddingBottom:20}}>
-            {/* <OurDrives /> */}
             <MissionVision />
           </ThemedView>
         </ThemedView>

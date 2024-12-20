@@ -7,7 +7,8 @@ export default function RootLayout() {
                 headerShown: false,
             }}>
             <Stack.Screen name="index" />
-            <Stack.Screen name="campaignMedia" />
+            {/* <Stack.Screen name="(campaign)/index" /> */}
+            <Stack.Screen name="campaignDetails" />
         </Stack>
     );
 }

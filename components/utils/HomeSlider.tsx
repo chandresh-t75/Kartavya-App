@@ -12,6 +12,7 @@ import Slider3 from '../../assets/images/slider3.svg';
 // https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/alliance-american-arms-blue_witzgj.jpg
 // https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_103149261_I53FAObzpAiNmB82R1TCeBfGcOJRsTW1_fdxya1.jpg
 // https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_576126362_ll2tqdvXs27cDRRovBTmFCkPM9iX68iL_o6udgo.jpg
+// https://res.cloudinary.com/doagrwjza/image/upload/v1734351232/Screenshot_2024-12-16_174245_tkon17.png
 
 const SliderImages = [
   {
@@ -22,7 +23,7 @@ const SliderImages = [
   },
   {
       id: 2,
-      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_576126362_ll2tqdvXs27cDRRovBTmFCkPM9iX68iL_o6udgo.jpg",
+      image: "https://res.cloudinary.com/doagrwjza/image/upload/v1734351232/Screenshot_2024-12-16_174245_tkon17.png",
 
      
   },
@@ -36,6 +37,10 @@ const SliderImages = [
       image: "https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_103149261_I53FAObzpAiNmB82R1TCeBfGcOJRsTW1_fdxya1.jpg",
 
       
+  },{
+    id:5,
+      image:"https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/240_F_576126362_ll2tqdvXs27cDRRovBTmFCkPM9iX68iL_o6udgo.jpg"
+   
   }
 ]
 

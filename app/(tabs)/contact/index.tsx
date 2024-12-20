@@ -1,109 +1,276 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { maroonColorLight } from '@/constants/Colors';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+// import * as ImagePicker from 'expo-image-picker';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-
-export default function Contact() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={ 
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Contact</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
-  );
+interface Member {
+  name: string;
+  email: string;
+  role: string;
+  profileImage: string;
 }
 
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  city: string;
+  state: string;
+  country: string;
+  profileImage: string | null;
+}
+
+const JoinCommunityScreen= () => {
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'Member',
+    city: '',
+    state: '',
+    country: '',
+    profileImage: null,
+  });
+
+  const [topMembers] = useState<Member[]>([
+    {
+      name: 'John Doe',
+      email: 'john@example.com',
+      role: 'Admin',
+      profileImage: 'https://www.w3schools.com/w3images/avatar2.png',
+    },
+    {
+      name: 'Jane Smith',
+      email: 'jane@example.com',
+      role: 'Member',
+      profileImage: 'https://www.w3schools.com/w3images/avatar3.png',
+    },
+    {
+      name: 'Michael Lee',
+      email: 'michael@example.com',
+      role: 'Member',
+      profileImage: 'https://www.w3schools.com/w3images/avatar1.png',
+    },
+  ]);
+
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    // let result = await ImagePicker.launchImageLibraryAsync({
+    //   mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    //   allowsEditing: true,
+    //   aspect: [4, 3],
+    //   quality: 1,
+    // });
+
+    // if (!result.canceled) {
+    //   setSelectedImage(result.uri);
+    //   handleInputChange('profileImage', result.uri); // Update form data with selected image
+    // }
+  };
+
+  const handleInputChange = (name: keyof FormData, value: string): void => {
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = (): void => {
+    // Validate form fields
+    if (!formData.name || !formData.email || !formData.phone || !formData.city || !formData.state || !formData.country) {
+      Alert.alert('Error', 'Please fill in all the fields');
+      return;
+    }
+
+    // Simulate form submission
+    console.log('Form Data:', formData);
+
+    // Here, you would make the API call to submit the form data
+    Alert.alert('Success', 'You have successfully joined the community!');
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9f9', paddingBottom: 20 }}>
+    <ScrollView showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', textAlign: 'center', marginVertical: 20 }}>
+          Join the Kartavya Community
+      </Text>
+
+      {/* Top Recent Members Section */}
+      <View style={{ marginBottom: 20,paddingLeft:20 }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#31d1c9', marginBottom: 15 }}>
+          Our Members
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={{ flexDirection: 'row' ,paddingBottom:20}}>
+            {topMembers.map((member, index) => (
+              <View
+                key={index}
+                style={{
+                  width:120,height:120,
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent:"center",
+                  backgroundColor: '#fff',
+                  padding: 15,
+                  marginRight: 15, 
+                  elevation: 5, 
+                  shadowColor: '#000',
+                  shadowOpacity: 0.1,
+                  shadowRadius: 5,
+                  borderRadius:200
+                  
+                }}
+              >
+                <Image
+                  source={{ uri: member.profileImage }}
+                  style={{ width: 50, height: 50, borderRadius: 50, marginBottom: 5 }}
+                />
+                <View>
+                  <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#333',textAlign:"center" }}>{member.name}</Text>
+                  <Text style={{ fontSize: 12, color: '#777',textAlign:"center" }}>{member.role}</Text>
+                  
+                </View>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+       
+      </View>
+      <Text style={{textAlign:"center",fontSize:16,marginBottom:20,fontWeight:700,color:maroonColorLight}}>Join Us</Text>
+
+      {/* Join Community Form */}
+      <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 25, elevation: 5, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, marginTop: 20 }}>
+      {selectedImage && (
+        <Image source={{ uri: selectedImage }} style={{ width: 100, height: 100, borderRadius: 50, alignSelf: 'center', marginBottom: 15 }} />
+      )}
+      <TouchableOpacity style={{ alignSelf: 'center', marginBottom: 15 }} onPress={pickImage}>
+        <Text style={{ color: '#28a745', fontSize: 16, fontWeight: 'bold' }}>Select Profile Image</Text>
+      </TouchableOpacity>
+
+      <TextInput
+        style={{
+          height: 50,
+          borderColor: '#dcdcdc',
+          borderWidth: 1,
+          borderRadius: 12,
+          paddingHorizontal: 15,
+          marginBottom: 15,
+          fontSize: 16,
+          backgroundColor: '#f9f9f9',
+       
+        }}
+        placeholder="Enter your name"
+        value={formData.name}
+        onChangeText={(value) => handleInputChange('name', value)}
+        placeholderTextColor="#aaa"
+      />
+      <TextInput
+        style={{
+          height: 50,
+          borderColor: '#dcdcdc',
+          borderWidth: 1,
+          borderRadius: 12,
+          paddingHorizontal: 15,
+          marginBottom: 15,
+          fontSize: 16,
+       
+        }}
+        placeholder="Enter your email"
+        value={formData.email}
+        onChangeText={(value) => handleInputChange('email', value)}
+        placeholderTextColor="#aaa"
+      />
+      <TextInput
+        style={{
+          height: 50,
+          borderColor: '#dcdcdc',
+          borderWidth: 1,
+          borderRadius: 12,
+          paddingHorizontal: 15,
+          marginBottom: 15,
+          fontSize: 16,
+          backgroundColor: '#f9f9f9',
+     
+        }}
+        placeholder="Enter your phone number"
+        value={formData.phone}
+        onChangeText={(value) => handleInputChange('phone', value)}
+        placeholderTextColor="#aaa"
+      />
+      <TextInput
+        style={{
+          height: 50,
+          borderColor: '#dcdcdc',
+          borderWidth: 1,
+          borderRadius: 12,
+          paddingHorizontal: 15,
+          marginBottom: 15,
+          fontSize: 16,
+          backgroundColor: '#f9f9f9',
+         
+        }}
+        placeholder="City"
+        value={formData.city}
+        onChangeText={(value) => handleInputChange('city', value)}
+        placeholderTextColor="#aaa"
+      />
+      <TextInput
+        style={{
+          height: 50,
+          borderColor: '#dcdcdc',
+          borderWidth: 1,
+          borderRadius: 12,
+          paddingHorizontal: 15,
+          marginBottom: 15,
+          fontSize: 16,
+          backgroundColor: '#f9f9f9',
+          
+        }}
+        placeholder="State"
+        value={formData.state}
+        onChangeText={(value) => handleInputChange('state', value)}
+        placeholderTextColor="#aaa"
+      />
+      <TextInput
+        style={{
+          height: 50,
+          borderColor: '#dcdcdc',
+          borderWidth: 1,
+          borderRadius: 12,
+          paddingHorizontal: 15,
+          marginBottom: 20,
+          fontSize: 16,
+          backgroundColor: '#f9f9f9',
+          
+        }}
+        placeholder="Country"
+        value={formData.country}
+        onChangeText={(value) => handleInputChange('country', value)}
+        placeholderTextColor="#aaa"
+      />
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#28a745',
+          paddingVertical: 15,
+          borderRadius: 12,
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: 10,
+        }}
+        onPress={handleSubmit}
+      >
+        <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>Join Now</Text>
+      </TouchableOpacity>
+    </View>
+  
+    </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+export default JoinCommunityScreen;

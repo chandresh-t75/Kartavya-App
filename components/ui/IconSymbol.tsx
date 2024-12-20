@@ -4,6 +4,12 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolWeight } from 'expo-symbols';
 import React from 'react';
 import { OpaqueColorValue, StyleProp, TextStyle, ViewStyle } from 'react-native';
+import Home from "../../assets/images/home.svg"
+import Explore from "../../assets/images/explore.svg"
+import Profile from "../../assets/images/profile.svg"
+import Member from "../../assets/images/member.svg"
+
+
 
 // Add your SFSymbol to MaterialIcons mappings here.
 const MAPPING = {
