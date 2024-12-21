@@ -26,7 +26,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
     const captureAndShare = async () => {
         if (viewShotRef?.current) {
             try {
-                const uri = await viewShotRef.current?.capture(); // Only call capture if ref is not null
+                const uri = await viewShotRef?.current?.capture();
                 if (uri) {
                     if (await Sharing.isAvailableAsync()) {
                         await Sharing.shareAsync(uri);
@@ -48,7 +48,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
 
     return (
         <>
-            <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 0.9 }}>
+            <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 0.9 }} style={{ marginHorizontal: 20,}}>
                 <View
                     style={{
                         backgroundColor: '#fff',
@@ -56,7 +56,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
                         borderColor:"#31d1c9",
                         borderWidth:1,
                         padding: 20,
-                        marginHorizontal: 20,
+                       
                         alignItems: 'center',
                         elevation: 5,
                         shadowColor: '#bdbdbd',
