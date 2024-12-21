@@ -8,7 +8,7 @@ import SkeletonLoader from '@/components/utils/SkeletonLoader';
 import CircularProgressBar from '@/components/utils/CircularProgressBar';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as FileSystem from 'expo-file-system';
-// import * as MediaLibrary from 'expo-media-library';
+import * as MediaLibrary from 'expo-media-library';
 import RedLike from "../../../../assets/images/red-like.svg"
 
 
@@ -92,24 +92,24 @@ const campaignDetails = () => {
 
 
 
-  // useEffect(() => {
-  //   // Request permission to access the media library
-  //   const requestPermission = async () => {
-  //     const { status } = await MediaLibrary.requestPermissionsAsync();
+  useEffect(() => {
+    // Request permission to access the media library
+    const requestPermission = async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
 
-  //     if (status === 'granted') {
-  //       setHasPermission(true);
-  //     } else {
-  //       Alert.alert(
-  //         'Permission Denied',
-  //         'You need to grant media library permission to download images.'
-  //       );
-  //       setHasPermission(false);
-  //     }
-  //   };
+      if (status === 'granted') {
+        setHasPermission(true);
+      } else {
+        Alert.alert(
+          'Permission Denied',
+          'You need to grant media library permission to download images.'
+        );
+        setHasPermission(false);
+      }
+    };
 
-  //   requestPermission();
-  // }, []);
+    requestPermission();
+  }, []);
 
   // Function to handle download
   const handleDownload = async (imageUrl: string) => {
@@ -133,7 +133,7 @@ const campaignDetails = () => {
       // Check if the download result contains a valid URI
       if (downloadResult && downloadResult.uri) {
         // Save the downloaded file to the media library
-        // await MediaLibrary.createAssetAsync(downloadResult.uri);
+        await MediaLibrary.createAssetAsync(downloadResult.uri);
 
         Alert.alert("Download Complete", `Image downloaded to ${downloadResult.uri}`);
       } else {
