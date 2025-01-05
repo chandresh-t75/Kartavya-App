@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, Animated, ScrollView, Share, View, Text, Image, Pressable, Dimensions, Alert, FlatList } from 'react-native';
 import Modal from 'react-native-modal'; // Import the modal
 import { ThemedText } from '@/components/ThemedText';
@@ -17,6 +17,10 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import EventPhotos from '@/components/utils/EventsPhotos';
 import EventVideos from '@/components/utils/EventVideos';
+import { useDispatch } from 'react-redux';
+import axios from 'axios';
+import { setCampaigns } from '@/redux/reducers/campaignSlice';
+import { useSelector } from 'react-redux';
 
 
 
@@ -37,9 +41,11 @@ interface Event {
 
 export default function Donate() {
   const router = useRouter();
+  const dispatch=useDispatch();
 
   const { width, height } = Dimensions.get("window")
   const [activeTab, setActiveTab] = useState("All")
+  const campaigns = useSelector((state: any) => state.campaign.campaigns);
 
   const events: Event[] = [
     {
@@ -71,14 +77,30 @@ export default function Donate() {
    
   ]
 
+  useEffect(()=>{
+    fetchCampaigns(activeTab);
+    
+  },[])
 
+  const fetchCampaigns = async (status:string) => {
+    try {
+      await axios.get('http://192.168.43.243:5000/campaign/get-all-campaigns',{
+        params:{
+          status:status
+        }
+      }).then(
+        (response)=>{
 
+          dispatch(setCampaigns(response.data));
+        }
+      )
+      
+    } catch (error) {
+      console.error('Error:', error);
+    }
 
+  }
 
-  // const handleEventPress = (event: Event) => {
-  //   router.push(`/(tabs)/explore/(campaign)?eventData=${JSON.stringify(event)}`);
-
-  // };
 
   const options = [
     {
@@ -112,22 +134,60 @@ export default function Donate() {
 
 
   return (
-    <SafeAreaView style={{ position: "relative",backgroundColor:"#fff",}}>
+    <SafeAreaView style={{ minHeight:height,position: "relative",backgroundColor:"#fff",}}>
       <ScrollView >
         <ThemedView style={{ paddingVertical: 20 }}>
-          <ThemedText type="subtitle" style={{ paddingHorizontal: 20 }}>Active Events</ThemedText>
+          <ThemedText type="subtitle" style={{ paddingHorizontal: 20 }}>Events</ThemedText>
           <ThemedText  style={{ paddingHorizontal: 20,fontSize:12,fontWeight:400 }}>Click on events to make donation</ThemedText>
-
-
-          
           <ThemedView style={{ paddingHorizontal: 10 }}>
 
             {/* tabs */}
+            <ThemedView style={{flexDirection:"row",gap:10,paddingHorizontal:20,marginTop:20,paddingBottom:10}}>
+            
+                        {
+                          options && options.map((item) => (
+            
+                            <TouchableOpacity key={item.id}
+                              onPress={() => { setActiveTab(item?.title); fetchCampaigns(item?.title); }}
+                              style={{
+                                padding: 3,
+                                paddingHorizontal:8,
+                              
+                                borderRadius: 10,
+                                borderColor:"#31d1c9",
+                                backgroundColor: activeTab === item.title? "#fff" : "white",
+                                borderWidth: activeTab === item.title? 2 : 1,
+                                justifyContent: "center",
+                                alignItems: "center",
+                                shadowColor: "#bdbdbd",
+                                shadowOffset: {
+                                  width: 0,
+                                  height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 4,
+                                elevation: 8,
+                              
+            
+                              }}
+                            >
+                              <ThemedText  style={{ color: activeTab === item.title? "#31d1c9" : "gray" ,fontSize:12,fontWeight:600}}>
+                                {item.title}
+                              </ThemedText>
+            
+                            </TouchableOpacity>
+            
+                          ))
+                        }
+            
+            
+            
+                      </ThemedView>
 
 
             <ThemedView style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 10,justifyContent:"center" }}>
-              {events.map((event: Event) => (
-                <TouchableOpacity key={event.id} onPress={() => handleEventPress(event)}
+              {campaigns && campaigns.map((event:any) => (
+                <TouchableOpacity key={event._id} onPress={() => handleEventPress(event)}
                   style={{
                     backgroundColor: "white", borderRadius: 16,
                     width: .85 * width,
@@ -248,6 +308,18 @@ export default function Donate() {
                   </View>
                 </TouchableOpacity>
               ))}
+
+              {
+                              campaigns.length === 0 && (
+                                <View style={{
+                                  flex: 1,
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                }}>
+                                  <ThemedText style={{ fontSize: 14, fontWeight: 400 }}>No campaigns available.</ThemedText>
+                                </View>
+                              )
+                            }
 
             </ThemedView>
             <ThemedView style={{marginVertical:10}}>

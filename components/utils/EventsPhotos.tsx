@@ -5,27 +5,28 @@ import { ThemedText } from '../ThemedText';
 import { useRouter } from 'expo-router';
 import { maroonColorLight } from '@/constants/Colors';
 
+
 const { width } = Dimensions.get('window');
 
 
-const EventPhotos = () => {
+const EventPhotos = ({images}:any) => {
     const router=useRouter()
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const scaleValue = useRef(new Animated.Value(0)).current; // Initial scale value for the zoom effect
 
 
-    const images = [
-        'https://picsum.photos/id/1067/1000/600',
-        'https://picsum.photos/id/1068/1000/600',
-        'https://picsum.photos/id/1069/1000/600',
-        'https://picsum.photos/id/1070/1000/600',
-        'https://picsum.photos/id/1071/1000/600',
-        'https://picsum.photos/id/1072/1000/600',
-        'https://picsum.photos/id/1073/1000/600',
-        'https://picsum.photos/id/1074/1000/600',
-        'https://picsum.photos/id/1075/1000/600',
-    ];
+    // const images = [
+    //     'https://picsum.photos/id/1067/1000/600',
+    //     'https://picsum.photos/id/1068/1000/600',
+    //     'https://picsum.photos/id/1069/1000/600',
+    //     'https://picsum.photos/id/1070/1000/600',
+    //     'https://picsum.photos/id/1071/1000/600',
+    //     'https://picsum.photos/id/1072/1000/600',
+    //     'https://picsum.photos/id/1073/1000/600',
+    //     'https://picsum.photos/id/1074/1000/600',
+    //     'https://picsum.photos/id/1075/1000/600',
+    // ];
     const [loading, setLoading] = useState(false);
 
     const handleImageLoad = () => {
@@ -92,13 +93,18 @@ const EventPhotos = () => {
             </ThemedView>
             <FlatList
                 data={images}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item._id}
                 numColumns={3}
                 renderItem={({ item }) => (
                     <View style={{ flex: 1, margin: 5 }}>
-                        {loading ? renderSkeleton() : renderImage(item)}
+                        {loading ? renderSkeleton() : renderImage(item?.url)}
                     </View>
                 )}
+                ListEmptyComponent={
+                    <ThemedText style={{ textAlign: 'center', fontSize: 14, marginBottom: 20 }}>
+                        No images available
+                    </ThemedText>
+                }
             />
 
             <Modal

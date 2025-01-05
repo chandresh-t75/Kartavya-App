@@ -1,8 +1,12 @@
-import React, { useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, Share } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, Image, TouchableOpacity, Share, ActivityIndicator } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+import { setMember } from '@/redux/reducers/userDataSlice';
+import { useDispatch } from 'react-redux';
 
 
 interface Member {
@@ -20,8 +24,60 @@ interface MemberCardProps {
     member: Member;
 }
 
-const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
+
+
+const MemberCard = ({ member }: any) => {
     const viewShotRef = useRef<ViewShot>(null);
+    const dispatch = useDispatch();
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [imgLoading, setImgLoading] = useState(false)
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            console.log(result.assets[0].uri)
+            await updateProfilePic(result.assets[0].uri);
+
+        }
+    };
+
+    const updateProfilePic = async (img: string) => {
+        try {
+            setImgLoading(true)
+
+            const formData = new FormData();
+            formData.append('memberId', member?._id)
+            if(img){
+            formData.append('profilePic', {
+                uri: img,
+                name: 'profilePic.jpg',
+                type: 'image/jpg',
+            }as any);
+            }
+
+            await axios.put('http://192.168.43.243:5000/member/update-pic', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }).then((response) => {
+                console.log('Profile Pic updated successfully', response.data);
+                dispatch(setMember(response.data))
+                setImgLoading(false);
+            })
+
+        } catch (error) {
+            console.error('Error updating profile pic:', error);
+            setImgLoading(false);
+
+        }
+    }
+
 
     const captureAndShare = async () => {
         if (viewShotRef?.current) {
@@ -48,15 +104,15 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
 
     return (
         <>
-            <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 0.9 }} style={{ marginHorizontal: 20,}}>
+            <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 0.9 }} style={{ marginHorizontal: 20, }}>
                 <View
                     style={{
                         backgroundColor: '#fff',
                         borderRadius: 15,
-                        borderColor:"#31d1c9",
-                        borderWidth:1,
+                        borderColor: "#31d1c9",
+                        borderWidth: 1,
                         padding: 20,
-                       
+
                         alignItems: 'center',
                         elevation: 5,
                         shadowColor: '#bdbdbd',
@@ -102,51 +158,57 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
                         <DetailRow
                             icon="location"
                             label="City"
-                            value={member.city || 'N/A'}
+                            value={member?.address?.city || 'N/A'}
                             color="#FF5722"
                         />
                         <DetailRow
                             icon="navigate"
                             label="State"
-                            value={member.state || 'N/A'}
+                            value={member.address?.state || 'N/A'}
                             color="#2196F3"
                         />
                         <DetailRow
                             icon="earth"
                             label="Country"
-                            value={member.country || 'N/A'}
+                            value={member.address?.country || 'N/A'}
                             color="#9C27B0"
                         />
                     </View>
                     <View style={{
-                        justifyContent:"center",
-                        alignItems:"center",
-                        flexDirection:"row",
-                        gap:5
+                        justifyContent: "center",
+                        alignItems: "center",
+                        flexDirection: "row",
+                        gap: 5
                     }}>
-                        <Image source={require("../../assets/images/kartavya.png")}  style={{width:24,height:24,borderRadius:50}}/>
+                        <Image source={require("../../assets/images/kartavya.png")} style={{ width: 24, height: 24, borderRadius: 50 }} />
                         <View>
-                        <Text style={{
-                            fontSize: 12,
-                            fontWeight:600,
-                            color: '#495057',
-                            
-                        }}>
-                            Assigned By Kartavya
-                        </Text>
-                        <Text style={{
-                            fontSize: 10,
-                            color: '#6c757d',
-                            textAlign: 'center'
-                            
-                        }}>
-                            {new Date().toLocaleDateString()}
-                        </Text>
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: '#495057',
+
+                            }}>
+                                Assigned By Kartavya
+                            </Text>
+                            <Text style={{
+                                fontSize: 10,
+                                color: '#6c757d',
+                                textAlign: 'center'
+
+                            }}>
+                                {member.joinedAt &&
+                                    new Intl.DateTimeFormat('en-GB', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric',
+                                    }).format(new Date(member.joinedAt))}
+
+                            </Text>
                         </View>
-                        
-                        </View>
-                        
-                  
+
+                    </View>
+
+
 
                 </View>
 
@@ -160,7 +222,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
                     paddingVertical: 14,
                     paddingHorizontal: 20,
                     margin: 20,
-                    marginBottom: 40,
+                    marginBottom: 20,
                     alignItems: 'center',
                     justifyContent: 'center',
                     elevation: 5,
@@ -172,6 +234,31 @@ const MemberCard: React.FC<MemberCardProps> = ({ member }) => {
                 onPress={captureAndShare}
             >
                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>Share Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={{
+                    backgroundColor: '#31d1c9',
+                    borderRadius: 16,
+                    paddingVertical: 14,
+                    paddingHorizontal: 20,
+                    marginHorizontal: 20,
+                    marginBottom: 40,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    elevation: 5,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.2,
+                    shadowRadius: 10,
+                    shadowOffset: { width: 0, height: 4 },
+                }}
+                onPress={pickImage}
+            >
+                {
+                    imgLoading ? (
+                        <ActivityIndicator color="#fff" />) :
+                        (
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>Update Member Pic</Text>
+                        )}
             </TouchableOpacity>
         </>
 

@@ -1,11 +1,16 @@
 import { maroonColorLight } from '@/constants/Colors';
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Alert, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Alert, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import Profile from "../../../assets/images/profile.svg"
 import { FontAwesome } from '@expo/vector-icons';
 import MemberCard from '@/components/utils/MemberCard';
+import { useDispatch } from 'react-redux';
+import { useRouter } from 'expo-router';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { setMember } from '@/redux/reducers/userDataSlice';
 
 interface Member {
   name: string;
@@ -14,7 +19,7 @@ interface Member {
   profileImage: string;
 }
 
-interface FormData {
+interface UserFormData {
   name: string;
   email: string;
   phone: string;
@@ -24,6 +29,7 @@ interface FormData {
   country: string;
   profileImage: string;
 }
+
 
 type MemberType = {
   name: string;
@@ -33,12 +39,14 @@ type MemberType = {
   city: string;
   state: string;
   country: string;
-  profileImage: string ;
+  profileImage: string;
 };
 
 const JoinCommunityScreen = () => {
-  const [member, setMember] = useState<MemberType | null>(null);
-  const [formData, setFormData] = useState<FormData>({
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const [userformData, setUserformData] = useState<UserFormData>({
     name: '',
     email: '',
     phone: '',
@@ -48,6 +56,11 @@ const JoinCommunityScreen = () => {
     country: '',
     profileImage: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const member = useSelector((state: any) => state.userData.member);
+  const user = useSelector((state: any) => state.userData.userDetails);
+
 
   console.log("member", member);
   const [topMembers] = useState<Member[]>([
@@ -88,27 +101,84 @@ const JoinCommunityScreen = () => {
     }
   };
 
-  const handleInputChange = (name: keyof FormData, value: string): void => {
-    setFormData({
-      ...formData,
+  const handleInputChange = (name: keyof UserFormData, value: string): void => {
+    setUserformData({
+      ...userformData,
       [name]: value,
     });
   };
 
-  const handleSubmit = (): void => {
+  const handleSubmit = async () => {
     // Validate form fields
-    if (!formData.name || !formData.email || !formData.phone || !formData.city || !formData.state || !formData.country) {
+    if (!userformData.name || !userformData.email || !userformData.phone || !userformData.city || !userformData?.state || !userformData?.country || !userformData?.profileImage) {
       Alert.alert('Error', 'Please fill in all the fields');
       return;
     }
 
 
-    console.log('Form Data:', formData);
-    setMember({ ...formData });
+    try {
+
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('name', userformData?.name);
+      formData.append('email', userformData?.email);
+      formData.append('phone', userformData?.phone);
+      formData.append('city', userformData?.city);
+      formData.append('state', userformData?.state);
+      formData.append('country', userformData?.country);
+      formData.append('userId', user?._id);
 
 
-    Alert.alert('Success', 'You have successfully joined the community!');
+      if (userformData?.profileImage) {
+        formData.append('profilePic', {
+          uri: userformData?.profileImage,
+          name: `member_img_${Date.now()}_${Math.floor(Math.random() * 100000)}.jpg`,
+          type: 'image/jpeg',
+        } as any);
+      }
+      console.log("creating user", formData);
+
+      await axios.post('http://192.168.43.243:5000/member/create-member', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }).then(async (response) => {
+        console.log(response.data);
+        const newmember = response.data;
+        dispatch(setMember(newmember));
+        setLoading(false);
+      })
+
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+
+    }
   };
+
+  const fetchMember = async () => {
+    try {
+      await axios.get('http://192.168.43.243:5000/member/single-member', {
+        params: {
+          userId: user?._id
+        }
+      }).then(
+        (response) => {
+          console.log("member", response.data);
+          dispatch(setMember(response.data));
+
+        }
+      )
+
+    } catch (error) {
+      console.error('Error finding member:', error);
+    }
+
+  }
+
+  useEffect(() => {
+    fetchMember();
+  }, [])
 
   return (
     <SafeAreaView style={{ backgroundColor: '#f9f9f9' }}>
@@ -160,7 +230,7 @@ const JoinCommunityScreen = () => {
 
         </View>
         {
-          !member &&
+          member?.length === 0 && user &&
           <View>
 
 
@@ -204,7 +274,7 @@ const JoinCommunityScreen = () => {
 
                 }}
                 placeholder="Enter your name"
-                value={formData.name}
+                value={userformData.name}
                 onChangeText={(value) => handleInputChange('name', value)}
                 placeholderTextColor="#aaa"
               />
@@ -231,7 +301,7 @@ const JoinCommunityScreen = () => {
 
                 }}
                 placeholder="Enter your email"
-                value={formData.email}
+                value={userformData.email}
                 onChangeText={(value) => handleInputChange('email', value)}
                 placeholderTextColor="#aaa"
               />
@@ -259,7 +329,7 @@ const JoinCommunityScreen = () => {
                 }}
                 keyboardType='phone-pad'
                 placeholder="Enter your phone number"
-                value={formData.phone}
+                value={userformData.phone}
                 onChangeText={(value) => handleInputChange('phone', value)}
                 placeholderTextColor="#aaa"
               />
@@ -286,7 +356,7 @@ const JoinCommunityScreen = () => {
 
                 }}
                 placeholder="City"
-                value={formData.city}
+                value={userformData.city}
                 onChangeText={(value) => handleInputChange('city', value)}
                 placeholderTextColor="#aaa"
               />
@@ -313,7 +383,7 @@ const JoinCommunityScreen = () => {
 
                 }}
                 placeholder="State"
-                value={formData.state}
+                value={userformData.state}
                 onChangeText={(value) => handleInputChange('state', value)}
                 placeholderTextColor="#aaa"
               />
@@ -340,7 +410,7 @@ const JoinCommunityScreen = () => {
 
                 }}
                 placeholder="Country"
-                value={formData.country}
+                value={userformData.country}
                 onChangeText={(value) => handleInputChange('country', value)}
                 placeholderTextColor="#aaa"
               />
@@ -365,17 +435,77 @@ const JoinCommunityScreen = () => {
                 }}
                 onPress={handleSubmit}
               >
-                <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Become Member</Text>
+                {
+                  loading ? (
+                    <ActivityIndicator color="#fff" />) :
+                    (
+                      <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Become Member</Text>)
+                }
               </TouchableOpacity>
             </View>
           </View>
         }
 
         {
-          member &&
-         <MemberCard member={member}/>
+          member && user &&
+          <MemberCard member={member} />
         }
 
+        {
+          user?.length === 0 &&
+          <View
+            style={{
+              backgroundColor: '#ffffff',
+              padding: 15,
+              margin: 20,
+              borderRadius: 15,
+              shadowColor: '#000',
+              shadowOpacity: 0.1,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 5,
+              gap: 10,
+              marginTop: 50
+            }}
+          >
+            <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 10, textAlign: "center" }}>Join us!</Text>
+            <Text style={{ fontSize: 16, marginBottom: 10, textAlign: "center" }}>Please signup / log in to become our member</Text>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#31d1c9',
+                padding: 15,
+                borderRadius: 10,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              onPress={() => {
+                router.push("/(tabs)/profile/auth/signup")
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>SignUp</Text>
+            </TouchableOpacity>
+
+            <Text style={{ marginTop: 10, fontSize: 14, color: '#6c757d', textAlign: "center" }}>Already have an account? </Text>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#31d1c9',
+                padding: 15,
+                borderRadius: 10,
+                justifyContent: 'center',
+                alignItems: 'center',
+
+              }}
+              onPress={() => {
+                router.push("/(tabs)/profile/auth/login")
+              }}
+
+            >
+              <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>Log In</Text>
+            </TouchableOpacity>
+          </View>
+        }
 
       </ScrollView>
     </SafeAreaView>

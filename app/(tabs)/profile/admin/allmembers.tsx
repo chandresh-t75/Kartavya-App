@@ -1,41 +1,66 @@
+
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 const allmembers = () => {
-  const [members, setMembers] = useState([
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      phone: '1234567890',
-      role: 'Admin',
-      joinedAt: '2024-01-01',
-      address: { city: 'New York', state: 'NY', country: 'USA' },
-      profileImage: 'https://via.placeholder.com/150',
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'janesmith@example.com',
-      phone: '0987654321',
-      role: 'Member',
-      joinedAt: '2023-12-15',
-      address: { city: 'San Francisco', state: 'CA', country: 'USA' },
-      profileImage: 'https://via.placeholder.com/150',
-    },
-  ]);
+  const dispatch=useDispatch();
+
+  // const members =useSelector((state:any)=>state.admin.allMembers)
+  
+  const [loading,setLoading]=useState(false);
+  const [page,setPage]=useState(1);
+  const [hasMore,setHasMore]=useState(true);
+  const [members, setMembers] = useState<any[]>([]);
+console.log(members);
+
+  const fetchAllMembers = async () => {
+    if(!hasMore)return;
+    try {
+      setLoading(true);
+      console.log("Loading members...");
+      const response=await axios.get("http://192.168.43.243:5000/member/get-all-members",{
+        params: { 
+          page,
+          limit: 10 
+        }
+      });
+
+      if(response.status === 200){
+        if(response.data.length < 10)setHasMore(false);  
+        console.log("member",response.data);
+        setPage(page+1);
+        setMembers([...members,...response.data]);
+        setLoading(false);
+      
+      }
+      
+      
+      
+    } catch (error:any) {
+      if(error.status === 404){
+        setPage(page+1);
+        setHasMore(false);
+      }
+      console.error('Error finding all members', error);
+    }
+  };
 
   useEffect(() => {
-    // Fetch members data from API
-    // Example: fetch('/api/members').then(res => res.json()).then(setMembers);
+    console.log("fetching members...");
+    fetchAllMembers();
   }, []);
 
   const handleMemberPress = (member:any) => {
     
   };
 
-  const renderMember = ({ item }:any) => (
-    <TouchableOpacity style={styles.card} onPress={() => handleMemberPress(item)}>
+  const renderMember = ({item}:any) => (
+    
+    <TouchableOpacity key={item._id} style={styles.card} onPress={() => handleMemberPress(item)}>
+     
       <Image source={{ uri: item.profileImage }} style={styles.profileImage} />
       <View style={styles.details}>
         <Text style={styles.name}>{item.name}</Text>
@@ -52,10 +77,21 @@ const allmembers = () => {
       <Text style={styles.title}>Team Members</Text>
       <FlatList
         data={members}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={renderMember}
         contentContainerStyle={styles.list}
+        onEndReached={ ()=>{
+          if(!hasMore){
+            fetchAllMembers()
+          }
+        }
+        }
+        onEndReachedThreshold={0.5}
+        ListEmptyComponent={
+          <Text style={{ textAlign: 'center' }}>No members found</Text>
+        }
       />
+
     </View>
   );
 };

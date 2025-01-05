@@ -9,9 +9,10 @@ const ProgressBar = ({ collectedAmount, targetAmount }:Props) => {
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   const percentage = Math.min(
-    Math.floor((collectedAmount / targetAmount) * 100),
+    (collectedAmount /targetAmount) * 100,
     100
   );
+  
 
   useEffect(() => {
     // Animate the progress bar

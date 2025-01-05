@@ -4,6 +4,7 @@ import { Svg, Circle, G, Text as SvgText } from 'react-native-svg';
 
 
 const CircularProgressBar = ({ percentage, size = 100, strokeWidth = 10 }:any) => {
+
     const radius = (size - strokeWidth) / 2; // Calculate radius
     const circumference = 2 * Math.PI * radius; // Circumference of the circle
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -44,11 +45,11 @@ const CircularProgressBar = ({ percentage, size = 100, strokeWidth = 10 }:any) =
             y={size / 2}
             textAnchor="middle"
             dy=".4em"
-            fontSize={size / 5}
+            fontSize={size / 6}
             fill="#333"
             fontWeight="bold"
           >
-            {Math.round(percentage)}%
+            {percentage}%
           </SvgText>
         </Svg>
       </View>

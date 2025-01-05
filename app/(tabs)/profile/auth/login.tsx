@@ -1,22 +1,64 @@
+import { setUserDetails } from '@/redux/reducers/userDataSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { useDispatch } from 'react-redux';
 
 const login = () => {
     const router=useRouter()
+    const dispatch=useDispatch();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const [loading,setLoading]=useState<boolean>(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    // Handle login logic here (API call to your backend)
-    Alert.alert('Success', 'User logged in successfully!');
-  };
+    setLoading(true);
+    try {
+      await axios.get(
+        'http://192.168.43.243:5000/user/login',{
+        params:{
+          email: email,
+          password: password,
+        }
+      }
+      ).then(async(response) => {
+        console.log(response.data);
+        const userId = response.data.user._id;
+        console.log('User ID:', userId);
 
+        await axios.get(
+          'http://192.168.43.243:5000/user/get-user',{
+          params:{
+            userId:userId
+          }
+        }).then(async(res)=>{
+          console.log(res.data);
+          dispatch(setUserDetails(res.data));
+          await AsyncStorage.setItem("userDetails", JSON.stringify(res.data));
+            router.push("/(tabs)/profile");
+            setLoading(false);
+
+        })
+      
+    })
+  
+      
+  
+    } catch (error) {
+    setLoading(false);
+
+      console.log('Error logging in:', error);
+      Alert.alert('Error', 'Failed to login');
+    }
+  };
+  
   return (
     <ScrollView style={{ backgroundColor: '#f4f7fb', flex: 1 }}>
       <View style={{ padding: 20, alignItems: 'center',paddingBottom:50 }}>
@@ -92,6 +134,7 @@ const login = () => {
         {/* Login Button */}
         <TouchableOpacity
           onPress={handleLogin}
+          disabled={loading}
           style={{
             padding: 15,
             backgroundColor: '#31d9cf',
@@ -106,7 +149,14 @@ const login = () => {
             elevation:5
           }}
         >
+           {
+              loading ?(
+               <ActivityIndicator color="#fff" />):
+            (
           <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>Login</Text>
+        )
+            
+      }
         </TouchableOpacity>
 
         {/* Divider */}
@@ -151,7 +201,7 @@ const login = () => {
         <View style={{ flexDirection: 'row', marginTop: 20 }}>
           <Text style={{ color: '#6c757d' }}>Don't have an account? </Text>
           <TouchableOpacity onPress={() => router.replace("/(tabs)/profile/auth/signup")}>
-            <Text style={{ color: '#31d9cf', fontWeight: 'bold' }}>Sign Up</Text>
+           <Text style={{ color: '#31d9cf', fontWeight: 'bold' }}>Sign Up</Text>
           </TouchableOpacity>
         </View>
       </View>

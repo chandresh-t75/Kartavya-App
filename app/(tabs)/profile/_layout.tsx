@@ -10,6 +10,8 @@ export default function RootLayout() {
             <Stack.Screen name="admin/updatecampaign" />
             <Stack.Screen name="admin/allmembers" />
             <Stack.Screen name="admin/createcampaign" />
+            <Stack.Screen name="admin/uploadMedia" />
+
 
             <Stack.Screen name="auth/login" />
             <Stack.Screen name="auth/signup" />

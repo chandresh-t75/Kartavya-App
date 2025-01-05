@@ -20,11 +20,84 @@ import HomeSlider from "@/components/utils/HomeSlider";
 import OurDrives from "@/components/utils/OurDrives";
 import MissionVision from "@/components/utils/MissionVision";
 import { lightBlue, lightPurple, maroonColorLight } from "@/constants/Colors";
+import { useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch } from "react-redux";
+import { setUserDetails } from "@/redux/reducers/userDataSlice";
+import axios from "axios";
+import { setCampaigns } from "@/redux/reducers/campaignSlice";
+import { useSelector } from "react-redux";
 
 const Logo="https://res.cloudinary.com/doagrwjza/image/upload/v1733722707/kartavya_lpt1hh.png"
+
+
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { width } = Dimensions.get("window");
+  const dispatch=useDispatch();
+  const campaigns = useSelector((state: any) => state.campaign.campaigns);
+
+
+
+  useEffect(() => {
+    const checkUserData = async () => {
+      try {
+        // Get user data from AsyncStorage
+        const storedUserData = await AsyncStorage?.getItem('userDetails');
+        
+        // If user data exists, parse it and log to console
+        if (storedUserData !== null) {
+          const userData = JSON.parse(storedUserData);
+          await axios.get("http://192.168.43.243:5000/user/get-user",{
+            params:{
+              userId:userData._id
+            }
+          }).then(async(response) => {
+           
+            dispatch(setUserDetails(response.data));
+            await AsyncStorage.setItem("userDetails", JSON.stringify(response.data));
+           
+
+
+          })
+          
+        } else {
+          console.log('No user data found in AsyncStorage');
+        }
+      } catch (error) {
+        console.error('Error checking user data in AsyncStorage:', error);
+      }
+    };
+  
+    checkUserData();
+  }, []);
+
+
+  useEffect(()=>{
+    fetchCampaigns("All");
+    
+  },[])
+
+  const fetchCampaigns = async (status:string) => {
+    try {
+      await axios.get('http://192.168.43.243:5000/campaign/get-all-campaigns',{
+        params:{
+          status:status
+        }
+      }).then(
+        (response)=>{
+
+          dispatch(setCampaigns(response.data));
+        }
+      )
+      
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
+  }
+
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", width: width }}>
       <ScrollView>

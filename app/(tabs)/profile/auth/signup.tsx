@@ -1,38 +1,100 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
+import { useDispatch } from 'react-redux';
+import { setUserBadges, setUserDetails } from '@/redux/reducers/userDataSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const signup = () => {
-    const router=useRouter();
+  const router = useRouter();
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
-  const [pic, setPic] = useState<string>(''); // For profile pic
+  const [pic, setPic] = useState<string | null>(null);
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState<boolean>(false);
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSignup = () => {
-    if (!name || !email || !password || !phone || !confirmPassword) {
-      Alert.alert('Error', 'Please fill all the fields');
+
+
+  const handleImagePicker = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'We need permissions to access your photos.');
       return;
     }
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setPic(result?.assets[0]?.uri);
     }
-    // Handle signup logic here (API call to your backend)
-    Alert.alert('Success', 'User signed up successfully!');
+  };
+
+  const handleSignup = async () => {
+    try {
+      if (!name || !email || !password || !phone || !confirmPassword) {
+        Alert.alert('Error', 'Please fill all the fields');
+        return;
+      }
+      if (password !== confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return;
+      }
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('phone', phone);
+      if (pic) {
+        formData.append('profilePic', {
+          uri: pic,
+          name: 'profile_pic.jpg',
+          type: 'image/jpeg',
+        } as any);
+      }
+      console.log("creating user", formData);
+
+      await axios.post('http://192.168.43.243:5000/user/signup', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }).then(async (response) => {
+        console.log(response.data);
+        const user = response.data.user;
+        dispatch(setUserDetails(user));
+
+        dispatch(setUserBadges(response.data.badge));
+
+        await AsyncStorage.setItem("userDetails", JSON.stringify(user));
+        router.push("/");
+        setLoading(false);
+      })
+
+    }
+    catch (error) {
+      setLoading(false);
+      console.log("errorin creating user", error);
+    }
   };
 
   return (
     <ScrollView style={{ backgroundColor: '#f4f7fb', flex: 1 }}>
-      <View style={{ padding: 20, alignItems: 'center',paddingBottom:50 }}>
+      <View style={{ padding: 20, alignItems: 'center', paddingBottom: 50 }}>
         {/* Logo or Placeholder Image */}
         <Image
-          source={{ uri: 'https://via.placeholder.com/120' }} 
-          style={{ width: 120, height: 120, borderRadius: 60, marginBottom: 20,marginTop:20 }}
+          source={{ uri: pic || 'https://via.placeholder.com/120' }}
+          style={{ width: 120, height: 120, borderRadius: 60, marginBottom: 20, marginTop: 20 }}
         />
 
         <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 15 }}>
@@ -163,7 +225,7 @@ const signup = () => {
 
         {/* Profile Picture Upload Button */}
         <TouchableOpacity
-          onPress={() => alert('Open image picker here')}
+          onPress={() => handleImagePicker()}
           style={{
             padding: 10,
             backgroundColor: '#31d9cf',
@@ -179,20 +241,29 @@ const signup = () => {
         {/* Sign Up Button */}
         <TouchableOpacity
           onPress={handleSignup}
+          disabled={loading}
           style={{
             padding: 15,
             backgroundColor: '#31d9cf',
             borderRadius: 20,
             width: '100%',
             alignItems: 'center',
-            shadowColor:"#000",
-            shadowOffset:{width:0,height:2},
-            shadowOpacity:0.5,
-            shadowRadius:4,
-            elevation:5
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 4,
+            elevation: 5
           }}
         >
-          <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>Sign Up</Text>
+          {
+            loading ? (
+               <ActivityIndicator color="#fff" />) :
+              (
+                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>Sign up</Text>
+              )
+
+          }
+
         </TouchableOpacity>
 
         {/* Sign In Text */}

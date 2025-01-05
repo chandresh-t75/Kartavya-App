@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, Animated, ScrollView, Share, View, Text, Image, Pressable, Dimensions, Alert, FlatList } from 'react-native';
 import Modal from 'react-native-modal'; // Import the modal
 import { ThemedText } from '@/components/ThemedText';
@@ -18,6 +18,10 @@ import EventPhotos from '@/components/utils/EventsPhotos';
 import EventVideos from '@/components/utils/EventVideos';
 import Like from "../../../assets/images/like.svg";
 import RedLike from "../../../assets/images/red-like.svg";
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { setCampaigns, setSelectedCampaign } from '@/redux/reducers/campaignSlice';
+import { useDispatch } from 'react-redux';
 
 
 
@@ -38,72 +42,98 @@ interface Event {
 }
 
 
+const options = [
+  {
+    id: 1,
+    title: "All"
+  },
+  {
+    id: 2,
+    title: "Active"
+  },
+  {
+    id: 3,
+    title: "Inactive"
+  },
+  {
+    id: 4,
+    title: "Upcoming"
+  },
+]
+
+
 export default function TabTwoScreen() {
+  const dispatch=useDispatch();
   const router = useRouter();
   const [liked,setLiked]=useState(false)
 
   const { width, height } = Dimensions.get("window")
   const [activeTab, setActiveTab] = useState("All")
+  const campaigns = useSelector((state: any) => state.campaign.campaigns);
+ const [images, setImages] = useState<string[]>([]);
+  const [videos, setVideos] = useState<string[]>([]);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [videoLoading, setVideoLoading] = useState(false);
 
-  const events: Event[] = [
-    {
-      id: 1,
-      title: 'Winter Blanket Drive',
-      startDate: '2021-12-10',
-      endDate: '2021-12-15',
-      location: 'Event Location',
-      description: 'This is the first event description.',
-      image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/money-hands-message-quote_xa5vmx.jpg',
-      targetAmount: 18000,
-      collectedAmount: 12000,
-      status:"Active",
-      createdBy: "Chandresh",
-      likes:300
+  // const events: Event[] = [
+  //   {
+  //     id: 1,
+  //     title: 'Winter Blanket Drive',
+  //     startDate: '2021-12-10',
+  //     endDate: '2021-12-15',
+  //     location: 'Event Location',
+  //     description: 'This is the first event description.',
+  //     image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/money-hands-message-quote_xa5vmx.jpg',
+  //     targetAmount: 18000,
+  //     collectedAmount: 12000,
+  //     status:"Active",
+  //     createdBy: "Chandresh",
+  //     likes:300
 
-    }, {
-      id: 2,
-      title: 'Cloth Donation Drive',
-      startDate: '2021-12-15',
-      endDate: '2021-12-20',
-      location: 'Event Location 2',
-      description: 'This is the second event description.',
-      image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1709576294/samples/balloons.jpg',
-      targetAmount: 20000,
-      collectedAmount: 13000,
-      status: "Upcoming",
-      createdBy: "Ramesh",
-      likes:600
-    },
-    {
-      id: 3,
-      title: 'Book Donation Drive',
-      startDate: '2021-12-20',
-      endDate: '2021-12-25',
-      location: 'Event Location 3',
-      description: 'This is the third event description.',
-      image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1709576294/samples/balloons.jpg',
-      targetAmount: 70000,
-      collectedAmount: 44780,
-      status:"Inactive",
-      createdBy: "Suresh",
-      likes:400
+  //   }, {
+  //     id: 2,
+  //     title: 'Cloth Donation Drive',
+  //     startDate: '2021-12-15',
+  //     endDate: '2021-12-20',
+  //     location: 'Event Location 2',
+  //     description: 'This is the second event description.',
+  //     image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1709576294/samples/balloons.jpg',
+  //     targetAmount: 20000,
+  //     collectedAmount: 13000,
+  //     status: "Upcoming",
+  //     createdBy: "Ramesh",
+  //     likes:600
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'Book Donation Drive',
+  //     startDate: '2021-12-20',
+  //     endDate: '2021-12-25',
+  //     location: 'Event Location 3',
+  //     description: 'This is the third event description.',
+  //     image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1709576294/samples/balloons.jpg',
+  //     targetAmount: 70000,
+  //     collectedAmount: 44780,
+  //     status:"Inactive",
+  //     createdBy: "Suresh",
+  //     likes:400
 
-    },
-    {
-      id: 4,
-      title: 'Summer Drive',
-      startDate: '2021-12-25',
-      endDate: '2021-12-30',
-      location: 'Event Location 4',
-      description: 'This is the fourth event description.',
-      image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1709576279/samples/landscapes/nature-mountains.jpg',
-      targetAmount: 27000,
-      collectedAmount: 25870,
-      status:"Active",
-      createdBy: "Mahesh",
-      likes:800
-    }
-  ]
+  //   },
+  //   {
+  //     id: 4,
+  //     title: 'Summer Drive',
+  //     startDate: '2021-12-25',
+  //     endDate: '2021-12-30',
+  //     location: 'Event Location 4',
+  //     description: 'This is the fourth event description.',
+  //     image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1709576279/samples/landscapes/nature-mountains.jpg',
+  //     targetAmount: 27000,
+  //     collectedAmount: 25870,
+  //     status:"Active",
+  //     createdBy: "Mahesh",
+  //     likes:800
+  //   }
+  // ]
 
 
 
@@ -114,28 +144,11 @@ export default function TabTwoScreen() {
 
   // };
 
-  const options = [
-    {
-      id: 1,
-      title: "All"
-    },
-    {
-      id: 2,
-      title: "Active"
-    },
-    {
-      id: 3,
-      title: "Inactive"
-    },
-    {
-      id: 4,
-      title: "Upcoming"
-    },
-  ]
+  
 
   const handleEventPress = (event: Event) => {
-    const eventData = JSON.stringify(event); // Serialize the event object
-    router.push(`/(tabs)/explore/(campaign)?eventData=${encodeURIComponent(eventData)}`); // Encode to ensure it works in the URL
+    dispatch(setSelectedCampaign(event));
+    router.push("/(tabs)/explore/(campaign)")
   };
 
   const handleFilterEvent = (title: string) => {
@@ -143,6 +156,88 @@ export default function TabTwoScreen() {
     console.log(title);
   }
 
+  useEffect(()=>{
+    fetchCampaigns(activeTab);
+    fetchCampaignImages()
+    fetchCampaignVideos()
+  },[])
+
+  const fetchCampaigns = async (status:string) => {
+    try {
+      await axios.get('http://192.168.43.243:5000/campaign/get-all-campaigns',{
+        params:{
+          status:status
+        }
+      }).then(
+        (response)=>{
+
+          dispatch(setCampaigns(response.data));
+        }
+      )
+      
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
+  }
+
+  const fetchCampaignImages = async () => {
+  
+    try {
+
+      setImageLoading(true);
+      await axios.get('http://192.168.43.243:5000/campaign/get-all-images', {
+        params: {
+          page: 1,
+          limit: 10,
+        }
+      }).then(
+        (response) => {
+         
+         
+          setImages([...images, ...response.data]);
+          setImageLoading(false);
+        }
+      )
+
+    } catch (error) {
+      console.error(error);
+      setImageLoading(false)
+
+    }
+
+  }
+
+  const fetchCampaignVideos = async () => {
+    
+    try {
+
+      setVideoLoading(true);
+      await axios.get('http://192.168.43.243:5000/campaign/get-all-videos', {
+        params: {
+        
+          page:1,
+          limit: 10,
+        }
+      }).then(
+        (response) => {
+       
+          setVideos([...videos, ...response.data]);
+          setVideoLoading(false);
+        }
+      )
+
+    } catch (error) {
+      console.error(error);
+      setVideoLoading(false);
+
+    }
+
+  }
+
+
+
+ 
 
 
 
@@ -157,13 +252,13 @@ export default function TabTwoScreen() {
               options && options.map((item) => (
 
                 <TouchableOpacity key={item.id}
-                  onPress={() => { setActiveTab(item?.title); handleFilterEvent(item?.title) }}
+                  onPress={() => { setActiveTab(item?.title); fetchCampaigns(item?.title); }}
                   style={{
                     padding: 3,
                     paddingHorizontal:8,
                   
                     borderRadius: 10,
-                   borderColor:"#31d1c9",
+                    borderColor:"#31d1c9",
                     backgroundColor: activeTab === item.title? "#fff" : "white",
                     borderWidth: activeTab === item.title? 2 : 1,
                     justifyContent: "center",
@@ -198,8 +293,8 @@ export default function TabTwoScreen() {
 
 
             <ThemedView style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 10 }}>
-              {events.map((event: Event) => (
-                <TouchableOpacity key={event.id} onPress={() => handleEventPress(event)}
+              {campaigns.map((event:any) => (
+                <TouchableOpacity key={event._id} onPress={() => handleEventPress(event)}
                   style={{
                     backgroundColor: "white", borderRadius: 16,
                     width: .45 * width,
@@ -352,6 +447,17 @@ export default function TabTwoScreen() {
                   </View>
                 </TouchableOpacity>
               ))}
+              {
+                campaigns.length === 0 && (
+                  <View style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                    <ThemedText style={{ fontSize: 14, fontWeight: 400 }}>No campaigns available.</ThemedText>
+                  </View>
+                )
+              }
 
             </ThemedView>
 
@@ -359,8 +465,8 @@ export default function TabTwoScreen() {
         </ThemedView>
         <ThemedView style={{ paddingBottom: 20 }}>
 
-          <EventPhotos />
-          <EventVideos />
+          <EventPhotos images={images}/>
+          <EventVideos videos={videos} />
         </ThemedView>
       </ScrollView>
 

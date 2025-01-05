@@ -10,18 +10,18 @@ import { maroonColorLight } from '@/constants/Colors';
 
 const { width } = Dimensions.get('window');
 
-const EventVideos = () => {
-    const router=useRouter();
+const EventVideos = ({ videos }: any) => {
+    const router = useRouter();
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const scaleValue = useRef(new Animated.Value(0)).current; // Initial scale value for the zoom effect
 
-    const videos = [
-        'https://www.w3schools.com/html/mov_bbb.mp4',
-        'https://www.w3schools.com/html/movie.mp4',
-        
-    ];
+    // const videos = [
+    //     'https://www.w3schools.com/html/mov_bbb.mp4',
+    //     'https://www.w3schools.com/html/movie.mp4',
+
+    // ];
 
     const handleVideoLoad = () => {
         setLoading(false);
@@ -61,17 +61,17 @@ const EventVideos = () => {
 
     const renderVideo = (uri: string) => (
         <TouchableOpacity key={uri} style={{ borderRadius: 10, overflow: 'hidden' }} onPress={() => openVideoModal(uri)}>
-            <View style={{ width: width / 2 - 20, height: 120, justifyContent: 'center',backgroundColor:"#000", alignItems: 'center' }}>
-            <Video
-                                    source={{ uri: uri }}
-                                    style={{ width: '100%', height: '100%' }}
-                                    useNativeControls
-                                    onLoad={handleVideoLoad}
-                                    // resizeMode="contain"
-                                    resizeMode={ResizeMode.CONTAIN}
-                                    
-                                    
-                                />
+            <View style={{ width: width / 2 - 20, height: 120, justifyContent: 'center', backgroundColor: "#000", alignItems: 'center' }}>
+                <Video
+                    source={{ uri: uri }}
+                    style={{ width: '100%', height: '100%' }}
+                    useNativeControls
+                    onLoad={handleVideoLoad}
+                    // resizeMode="contain"
+                    resizeMode={ResizeMode.CONTAIN}
+
+
+                />
             </View>
         </TouchableOpacity>
     );
@@ -80,20 +80,25 @@ const EventVideos = () => {
         <ThemedView style={{ width, padding: 10, backgroundColor: '#fff', justifyContent: 'center' }}>
             <ThemedView style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20 }}>
                 <ThemedText style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15 }}>Videos</ThemedText>
-                <TouchableOpacity onPress={()=>{router.push("/(tabs)/explore/campaignMedia")}}>
-                
-                    <ThemedText style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 15,color:maroonColorLight }}>See More</ThemedText>
+                <TouchableOpacity onPress={() => { router.push("/(tabs)/explore/campaignMedia") }}>
+
+                    <ThemedText style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 15, color: maroonColorLight }}>See More</ThemedText>
                 </TouchableOpacity>
             </ThemedView>
             <FlatList
                 data={videos}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item?._id}
                 numColumns={2}
                 renderItem={({ item }) => (
                     <View style={{ flex: 1, margin: 5 }}>
-                        {loading ? renderSkeleton() : renderVideo(item)}
+                        {loading ? renderSkeleton() : renderVideo(item?.url)}
                     </View>
                 )}
+                ListEmptyComponent={
+                    <ThemedText style={{ textAlign: 'center', fontSize: 14, marginBottom: 20 }}>
+                        No videos available
+                    </ThemedText>
+                }
             />
 
             <Modal

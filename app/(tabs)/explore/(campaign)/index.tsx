@@ -8,6 +8,10 @@ import { useRouter } from 'expo-router'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useSearchParams } from 'expo-router/build/hooks'
 import RedLike from "../../../../assets/images/red-like.svg"
+import { formatDateTime } from '@/components/logics/formatDateTime'
+import { useDispatch } from 'react-redux'
+import { setSelectedCampaign } from '@/redux/reducers/campaignSlice'
+import { useSelector } from 'react-redux'
 
 
 
@@ -26,15 +30,17 @@ interface Event {
 }
 const index = () => {
     const router = useRouter();
+    const dispatch=useDispatch();
     const searchParams = useSearchParams();
-    const [liked,setLiked]=useState(false)
+    const [liked, setLiked] = useState(false)
 
-    const eventData = searchParams.get('eventData'); // Safely access the parameter
+    const eventData = searchParams.get('eventData'); 
 
-    // Parse and decode the data if it exists
-    const selectedEvent = eventData ? JSON.parse(decodeURIComponent(eventData)) : null;
+    const selectedEvent = useSelector((state:any)=>state.campaign.selectedCampaign)
 
 
+
+    console.log(selectedEvent)
 
     const { width, height } = Dimensions.get("window")
 
@@ -83,14 +89,14 @@ const index = () => {
 
                             {/* Action Buttons */}
                             <TouchableOpacity
-                            
+
                                 onPress={() => { router.back(); }}
                                 style={{
                                     position: 'absolute',
                                     top: 30,
                                     left: 20,
                                     zIndex: 100,
-                                    padding:10
+                                    padding: 10
                                 }}
                             >
                                 <LeftArrow width={24} height={24} />
@@ -115,14 +121,14 @@ const index = () => {
                                     right: 30,
                                     zIndex: 100,
                                 }}
-                                onPress={()=>setLiked(!liked)}
+                                onPress={() => setLiked(!liked)}
                             >
-                               {
-                                liked &&  <RedLike width={24} height={24} />
-                               } 
-                               {
-                                !liked && <Like width={24} height={24} />
-                               }
+                                {
+                                    liked && <RedLike width={24} height={24} />
+                                }
+                                {
+                                    !liked && <Like width={24} height={24} />
+                                }
                             </TouchableOpacity>
                         </View>
 
@@ -169,43 +175,43 @@ const index = () => {
                                         Status
                                     </Text>
                                     {
-                                        selectedEvent.status ==="Active" &&
+                                        selectedEvent.status === "Active" &&
                                         <Text
-                                        style={{
-                                            fontSize: 18,
-                                            fontWeight: 'bold',
-                                            color:'#4CAF50',
-                                            marginTop: 5,
-                                        }}
-                                    >
-                                        {selectedEvent?.status}
-                                    </Text>
+                                            style={{
+                                                fontSize: 18,
+                                                fontWeight: 'bold',
+                                                color: '#4CAF50',
+                                                marginTop: 5,
+                                            }}
+                                        >
+                                            {selectedEvent?.status}
+                                        </Text>
                                     }
                                     {
-                                        selectedEvent.status ==="Inactive" &&
+                                        selectedEvent.status === "Inactive" &&
                                         <Text
-                                        style={{
-                                            fontSize: 18,
-                                            fontWeight: 'bold',
-                                            color:'#FF5252',
-                                            marginTop: 5,
-                                        }}
-                                    >
-                                        {selectedEvent?.status}
-                                    </Text>
+                                            style={{
+                                                fontSize: 18,
+                                                fontWeight: 'bold',
+                                                color: '#FF5252',
+                                                marginTop: 5,
+                                            }}
+                                        >
+                                            {selectedEvent?.status}
+                                        </Text>
                                     }
                                     {
-                                        selectedEvent.status ==="Upcoming" &&
+                                        selectedEvent.status === "Upcoming" &&
                                         <Text
-                                        style={{
-                                            fontSize: 18,
-                                            fontWeight: 'bold',
-                                            color:'#31d1c9',
-                                            marginTop: 5,
-                                        }}
-                                    >
-                                        {selectedEvent?.status}
-                                    </Text>
+                                            style={{
+                                                fontSize: 18,
+                                                fontWeight: 'bold',
+                                                color: '#31d1c9',
+                                                marginTop: 5,
+                                            }}
+                                        >
+                                            {selectedEvent?.status}
+                                        </Text>
                                     }
                                 </View>
 
@@ -280,7 +286,12 @@ const index = () => {
                                             <Text
                                                 style={{ fontSize: 16, fontWeight: "600", color: "#000", marginTop: 3 }}
                                             >
-                                                {selectedEvent?.startDate}
+                                                {selectedEvent?.startDate &&
+                                                    new Intl.DateTimeFormat('en-GB', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                    }).format(new Date(selectedEvent.startDate))}
                                             </Text>
                                         </View>
                                     </View>
@@ -305,7 +316,12 @@ const index = () => {
                                             <Text
                                                 style={{ fontSize: 16, fontWeight: "600", color: "#000", marginTop: 3 }}
                                             >
-                                                {selectedEvent?.endDate}
+                                                {selectedEvent?.endDate &&
+                                                    new Intl.DateTimeFormat('en-GB', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                    }).format(new Date(selectedEvent.endDate))}
                                             </Text>
                                         </View>
                                     </View>
@@ -320,7 +336,7 @@ const index = () => {
                                         paddingVertical: 20
                                     }}
                                 >
-                                    {selectedEvent?.description?.substring(0,100)}
+                                    {selectedEvent?.description?.substring(0, 100)}
                                 </Text>
 
                             </View>
@@ -328,6 +344,7 @@ const index = () => {
                             <View style={{ marginTop: 20, paddingHorizontal: 20, flexDirection: "row", gap: 20, justifyContent: "space-evenly" }}>
                                 <TouchableOpacity
                                     onPress={() => {
+                                        dispatch(setSelectedCampaign(selectedEvent))
                                         router.push("/(tabs)/explore/(campaign)/campaignDetails")
                                     }}
 

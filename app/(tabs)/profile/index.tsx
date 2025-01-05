@@ -1,10 +1,15 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, TextInput, Alert, Modal } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, ScrollView, TouchableOpacity, TextInput, Alert, Modal, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { setUserBadges, setUserDetails } from '@/redux/reducers/userDataSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // Example user data
 interface User {
   email: string;
@@ -16,30 +21,71 @@ interface User {
   donations: Array<{ campaignname: string, amount: number, date: string }>;
 }
 
-const user: User | null = {
-  email: 'example@example.com',
-  isAdmin: true,
-  totalDonated: 100,
-  name: 'John Doe',
-  profilePic: 'https://example.com/profile_pic.jpg',
-  phone: '123-456-7890',
-  donations: [
-    { campaignname: 'Campaign 1', amount: 50, date: '2022-01-01' },
-    { campaignname: 'Campaign 2', amount: 75, date: '2022-02-01' },
-    { campaignname: 'Campaign 3', amount: 25, date: '2022-03-01' },
-  ],
-};
+
 
 const ProfileScreen = () => {
   const router = useRouter()
+  const dispatch = useDispatch();
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [profilePic, setProfilePic] = useState(user?.profilePic || '');
+  const user = useSelector((state: any) => state.userData.userDetails);
+  const userBadges = useSelector((state: any) => state.userData.userBadges);
+  const campaigns = useSelector((state: any) => state.campaign.campaigns);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imgLoading, setImgLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
+  console.log("user", user?._id)
+  // console.log("campaigns", campaigns)
+  useEffect(() => {
+    const checkUserData = async () => {
+      try {
+        // Get user data from AsyncStorage
+        const storedUserData = await AsyncStorage?.getItem('userDetails');
+        if (storedUserData !== null) {
+          const userData = JSON.parse(storedUserData);
+          dispatch(setUserDetails(userData));
 
+          console.log('User data found in AsyncStorage:', userData);
+        } else {
+          console.log('No user data found in AsyncStorage');
+        }
+      } catch (error) {
+        console.error('Error checking user data in AsyncStorage:', error);
+      }
+    };
 
+    checkUserData();
+  }, []);
+
+  useEffect(() => {
+    // console.log("User object:", user);
+    if (user?._id) {
+      getUserBadges();
+    }
+  }, [user]);
+
+  const getUserBadges = async () => {
+    console.log("Fetching badges for user with ID:", user?._id);
+    try {
+      const response = await axios.get('http://192.168.43.243:5000/user/user-badges', {
+        params: {
+          userId: user?._id
+        }
+      });
+
+      const badges = response.data;
+      // console.log("Fetched badges:", badges);
+
+      // Dispatch action or update state with the fetched badges
+      dispatch(setUserBadges(badges));
+
+    } catch (error) {
+      console.log("Error fetching badges:", error);
+    }
+  }
 
   // Request permission to access the media library
   const requestPermissions = async () => {
@@ -69,7 +115,7 @@ const ProfileScreen = () => {
     });
 
     if (!result?.canceled) {
-      setProfilePic(result?.assets[0]?.uri);
+      updateProfilePic(result?.assets[0]?.uri);
     }
     setIsModalVisible(false);
 
@@ -87,7 +133,7 @@ const ProfileScreen = () => {
 
       if (!result.canceled) {
         console.log(result.assets[0].uri)
-        setProfilePic(result.assets[0].uri);
+        updateProfilePic(result.assets[0].uri);
 
       }
       setIsModalVisible(false);
@@ -102,9 +148,27 @@ const ProfileScreen = () => {
 
 
 
-  const handleNameUpdate = () => {
+  const handleNameUpdate = async () => {
+    setLoading(true)
 
-    setIsEditingName(false); // Close the modal
+    try {
+      await axios.put('http://192.168.43.243:5000/user/update-profile', {
+        userId: user?._id,
+        name: newName,
+      }).then(async(response) => {
+        console.log('Profile Pic updated successfully', response.data);
+        dispatch(setUserDetails(response.data))
+        await AsyncStorage.setItem("userDetails", JSON.stringify(response.data));
+
+        setIsEditingName(false);
+        setLoading(false);
+      })
+
+    } catch (error) {
+      console.error('Error updating profile pic:', error);
+      // setIsEditingName(false);
+      setLoading(false);
+    }
 
   };
 
@@ -112,6 +176,39 @@ const ProfileScreen = () => {
 
     setIsEditingName(false); // Close the modal
   };
+
+  const updateProfilePic = async (img: string) => {
+    try {
+      setImgLoading(true)
+
+      const formData = new FormData();
+      formData.append('userId', user?._id)
+      if (img) {
+        formData.append('profilePic', {
+          uri: img,
+          name: `profile_img_${Date.now()}_${Math.floor(Math.random() * 100000)}.jpg`,
+          type: 'image/jpg',
+        } as any);
+      }
+
+      await axios.put('http://192.168.43.243:5000/user/update-profile-pic', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }).then(async(response) => {
+        console.log('Profile Pic updated successfully', response.data);
+        dispatch(setUserDetails(response.data))
+        await AsyncStorage.setItem("userDetails", JSON.stringify(response.data));
+
+        setImgLoading(false);
+      })
+
+    } catch (error) {
+      console.error('Error updating profile pic:', error);
+      setImgLoading(false);
+
+    }
+  }
 
 
 
@@ -140,7 +237,7 @@ const ProfileScreen = () => {
         {/* Profile Picture with Edit Icon */}
         <TouchableOpacity onPress={handleProfileImageUpdate}>
           <Image
-            source={{ uri: user?.profilePic || 'https://via.placeholder.com/120' }}
+            source={{ uri: user?.pic || 'https://via.placeholder.com/120' }}
             style={{
               width: 120,
               height: 120,
@@ -209,6 +306,15 @@ const ProfileScreen = () => {
         >
           {user?.email || 'user@example.com'}
         </Text>
+        <Text
+          style={{
+            fontSize: 16,
+            color: '#6c757d',
+            marginBottom: 10,
+          }}
+        >
+          Phone: {user?.phone || '+91xxxxxxxxxx'}
+        </Text>
 
         {/* Admin Badge */}
         {user?.isAdmin && (
@@ -230,7 +336,7 @@ const ProfileScreen = () => {
       {/* user login if not */}
 
       {
-        !user &&
+        user?.length == 0 &&
         <View
           style={{
             backgroundColor: '#ffffff',
@@ -304,9 +410,9 @@ const ProfileScreen = () => {
         >
           <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15 }}>Badges Acquired</Text>
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {['badge1', 'badge2', 'badge3']?.map((badge, index) => (
+            {userBadges && userBadges?.map((badge: any) => (
               <TouchableOpacity
-                key={index}
+                key={badge?._id}
                 style={{
                   backgroundColor: '#fff',
                   borderWidth: 2,
@@ -324,7 +430,8 @@ const ProfileScreen = () => {
                 }}
               >
                 <Image
-                  source={{ uri: `https://via.placeholder.com/60` }}
+                  source={{ uri: badge?.icon || `https://via.placeholder.com/60` }}
+                  resizeMode='contain'
                   style={{
                     width: 60,
                     height: 60,
@@ -338,7 +445,7 @@ const ProfileScreen = () => {
                     color: '#333',
                   }}
                 >
-                  {badge}
+                  {badge?.title}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -387,9 +494,9 @@ const ProfileScreen = () => {
           <ScrollView
             horizontal={true}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 10,paddingBottom:10 }}
+            contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 10 }}
           >
-            {user && user?.donations && user?.donations.map((donation, index) => (
+            {user && user?.donations && user?.donations.map(({ donation, index }: any) => (
               <TouchableOpacity
                 key={index}
                 style={{
@@ -442,12 +549,12 @@ const ProfileScreen = () => {
       {/* Admin Panel Access */}
 
       {
-        user && user?.isAdmin &&
+        user &&
         <View
           style={{
             backgroundColor: '#ffffff',
             padding: 15,
-            margin: 20,
+            marginHorizontal: 20,
             borderRadius: 15,
             shadowColor: '#000',
             shadowOpacity: 0.1,
@@ -465,7 +572,6 @@ const ProfileScreen = () => {
               borderRadius: 10,
               justifyContent: 'center',
               alignItems: 'center',
-
             }}
             onPress={() => router.push("/(tabs)/profile/admin/createcampaign")}
           >
@@ -490,6 +596,40 @@ const ProfileScreen = () => {
         </View>
       }
 
+      {
+        user &&
+        <View
+          style={{
+            backgroundColor: '#ffffff',
+            padding: 15,
+            marginBottom: 40,
+            marginHorizontal: 20,
+            borderRadius: 15,
+            shadowColor: '#000',
+            shadowOpacity: 0.1,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 5,
+            gap: 10,
+            marginTop: 50
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#31d1c9',
+              padding: 15,
+              borderRadius: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => {
+              router.push("/(tabs)/profile/auth/signup")
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+      }
 
 
 
@@ -571,9 +711,15 @@ const ProfileScreen = () => {
                   paddingVertical: 10,
                   paddingHorizontal: 20,
                   borderRadius: 8,
+                  width: 80,
+                  justifyContent: "center",
+                  alignItems: "center"
                 }}
               >
-                <Text style={{ color: '#fff', fontSize: 16 }}>Save</Text>
+                {loading ? (
+                  <ActivityIndicator color="#fff" />) :
+                  (
+                    <Text style={{ color: '#fff', fontSize: 16, textAlign: "center" }}>Save</Text>)}
               </TouchableOpacity>
             </View>
           </View>

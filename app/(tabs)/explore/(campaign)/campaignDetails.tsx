@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, Animated, Alert, Share } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Image, ScrollView, TouchableOpacity, Animated, Alert, Share, Dimensions, FlatList, Modal } from 'react-native';
 import LeftArrow from "../../../../assets/images/left-arrow.svg"
 import ShareIcon from "../../../../assets/images/share.svg"
 import Like from "../../../../assets/images/like.svg"
@@ -10,6 +10,12 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import RedLike from "../../../../assets/images/red-like.svg"
+import { useSelector } from 'react-redux';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { ResizeMode, Video } from 'expo-av';
+import { ThemedText } from '@/components/ThemedText';
 
 
 const STATUS_COLORS = {
@@ -19,6 +25,7 @@ const STATUS_COLORS = {
 };
 const campaignDetails = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [images, setImages] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
   const [imageLoading, setImageLoading] = useState(true);
@@ -27,43 +34,130 @@ const campaignDetails = () => {
   const [collectedAmount, setCollectedAmount] = useState(0);
   const [progressPercent, setProgressPercent] = useState(0);
   const [hasPermission, setHasPermission] = useState<boolean>(false);
-    const [liked,setLiked]=useState(false)
-
-
-
-  const campaignData = {
-    id: 3,
-    title: 'Food Donation Drive',
-    startDate: '2023-11-10',
-    endDate: '2023-11-20',
-    location: 'BIET Jhansi',
-    description:
-      'Join us to distribute meals to the underprivileged community. Your contributions can bring a smile to someone’s face.Join us to distribute meals to the underprivileged community. Your contributions can bring a smile to someone’s face.',
-    image: 'https://res.cloudinary.com/doagrwjza/image/upload/v1734288164/money-hands-message-quote_xa5vmx.jpg',
-    targetAmount: 50000,
-    collectedAmount: 48000,
-    status: "Upcoming",
-    createdBy: 'Kavita',
+  const [liked, setLiked] = useState(false)
+  const [media, setMedia] = useState<ImagePicker.ImagePickerAsset[]>([]);
+  const [loading, setLoading] = useState(false);
+  const campaign = useSelector((state: any) => state.campaign.selectedCampaign);
+  const [moreImage, setMoreImage] = useState(true);
+  const [moreVideo, setMoreVideo] = useState(true);
+  const [imgPage, setImgPage] = useState(1)
+  const [videoPage, setVideoPage] = useState(1)
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const scaleValue = useRef(new Animated.Value(0)).current; // Animated scale value
+  const [photoLoading, setPhotoLoading] = useState(false);
+  // const [videoLoading, setVideoLoading] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const { width, height } = Dimensions.get("window")
+  const handleImageLoad = () => {
+    setPhotoLoading(false);
   };
 
-  useEffect(() => {
-    setTimeout(() => {
-      setImages([
-        'https://via.placeholder.com/150',
-        'https://via.placeholder.com/200',
-      ]);
-      setVideos(['https://via.placeholder.com/300']);
-      const progress = Math.min(
-        (campaignData.collectedAmount / campaignData.targetAmount) * 100,
-        100
-      );
+  const handleVideoLoad = () => {
+    setVideoLoading(false);
+  };
 
-      setProgressPercent(progress);
-      setImageLoading(false);
+
+
+  const openImageModal = (imageUrl: any) => {
+    setSelectedVideo(null)
+    setSelectedImage(imageUrl);
+    setModalVisible(true);
+
+    // Trigger zoom-in animation
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      friction: 3,
+      tension: 50,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeImageModal = () => {
+    // Trigger zoom-out animation before closing the modal
+    Animated.spring(scaleValue, {
+      toValue: 0,
+      friction: 3,
+      tension: 50,
+      useNativeDriver: true,
+    }).start();
+
+    setTimeout(() => {
+      setModalVisible(false);
+      setSelectedImage(null);
+    }, 300); // Delay to allow the animation to complete
+  };
+
+  const fetchCampaignImages = async () => {
+    if (!moreImage) return;
+    try {
+
+      setImageLoading(true);
+      await axios.get('http://192.168.43.243:5000/campaign/get-campaign-images', {
+        params: {
+          campaignId: campaign?._id,
+          page: imgPage,
+          limit: 10,
+        }
+      }).then(
+        (response) => {
+          setImgPage(imgPage + 1);
+          if (response.data.length < 10) setMoreImage(false);
+          setImages([...images, ...response.data]);
+          setImageLoading(false);
+        }
+      )
+
+    } catch (error) {
+      console.error(error);
+      setImageLoading(false)
+
+    }
+
+  }
+
+  const fetchCampaignVideos = async () => {
+    if (!moreVideo) return;
+    try {
+
+      setVideoLoading(true);
+      await axios.get('http://192.168.43.243:5000/campaign/get-campaign-videos', {
+        params: {
+          campaignId: campaign?._id,
+          page: videoPage,
+          limit: 10,
+        }
+      }).then(
+        (response) => {
+          setVideoPage(videoPage + 1);
+          if (response.data.length < 10) setMoreVideo(false);
+          setVideos([...videos, ...response.data]);
+          setVideoLoading(false);
+        }
+      )
+
+    } catch (error) {
+      console.error(error);
       setVideoLoading(false);
 
+    }
 
-    }, 2000);
+  }
+
+
+
+  useEffect(() => {
+    const progress = Math.min(
+      (campaign?.collectedAmount / campaign?.targetAmount) * 100,
+      100
+    );
+
+    console.log(progress);
+    
+    setProgressPercent(progress);
+
+    fetchCampaignImages()
+    fetchCampaignVideos()
   }, []);
 
   const onShare = async () => {
@@ -111,7 +205,6 @@ const campaignDetails = () => {
     requestPermission();
   }, []);
 
-  // Function to handle download
   const handleDownload = async (imageUrl: string) => {
     if (!hasPermission) {
       Alert.alert('Permission Denied', 'Cannot download without the necessary permissions.');
@@ -145,12 +238,90 @@ const campaignDetails = () => {
   };
 
 
+  const openVideoModal = (videoUrl: string) => {
+    setSelectedImage(null);
+    setSelectedVideo(videoUrl);
+    setModalVisible(true);
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      friction: 3,
+      tension: 50,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeVideoModal = () => {
+    // Trigger the zoom-out animation before closing the modal
+    Animated.spring(scaleValue, {
+      toValue: 0,
+      friction: 3,
+      tension: 50,
+      useNativeDriver: true,
+    }).start();
+
+    setTimeout(() => {
+      setModalVisible(false);
+      setSelectedVideo(null);
+    }, 300); // Delay to allow the animation to complete
+  };
+
+
+  const renderPhotoSkeleton = () => {
+    return (
+      <View style={{ width: 160, height: 120, borderRadius: 10, backgroundColor: '#e0e0e0' }} />
+    );
+  };
+  const renderPhoto = ({item}: any) => (
+    <TouchableOpacity style={{ borderRadius: 10, overflow: 'hidden' }}
+      onPress={() => openImageModal(item?.url)}>
+      <Image
+        source={{ uri: item?.url }}
+        style={{ width: 160, height: 120, borderRadius: 10, resizeMode: 'cover' }}
+
+      />
+    </TouchableOpacity>
+
+
+  );
+
+
+  const renderVideoSkeleton = () => (
+
+    <View style={{ width: 160, height: 120, borderRadius: 10, backgroundColor: '#e0e0e0' }} />
+
+  );
+
+  const renderVideo = ({ item }: any) => (
+    <TouchableOpacity key={item?.url} style={{ borderRadius: 10, overflow: 'hidden' }} onPress={() => openVideoModal(item?.url)}>
+      <View
+        style={{
+          alignItems: 'center',
+
+        }}
+      >
+        <Video
+          source={{ uri: item?.url }}
+          style={{ width: 160, height: 120, borderRadius: 10, backgroundColor: "#000" }}
+          useNativeControls
+
+          resizeMode={ResizeMode.CONTAIN}
+
+
+
+        />
+      </View>
+    </TouchableOpacity>
+  );
+
+
+
+
 
   return (
     <ScrollView style={{ flex: 1, position: "relative", backgroundColor: '#f9f9f9' }}>
       {/* Header Image */}
       <Image
-        source={{ uri: campaignData.image }}
+        source={{ uri: campaign?.image }}
         style={{
           width: '100%',
           height: 250,
@@ -191,14 +362,14 @@ const campaignDetails = () => {
             right: 30,
             zIndex: 100,
           }}
-          onPress={()=>setLiked(!liked)}
+          onPress={() => setLiked(!liked)}
         >
           {
-                                liked &&  <RedLike width={24} height={24} />
-                               } 
-                               {
-                                !liked && <Like width={24} height={24} />
-                               }
+            liked && <RedLike width={24} height={24} />
+          }
+          {
+            !liked && <Like width={24} height={24} />
+          }
         </TouchableOpacity>
       </View>
       <View
@@ -216,7 +387,7 @@ const campaignDetails = () => {
         }}
       >
         <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 }}>
-          {campaignData.title}
+          {campaign?.title}
         </Text>
         <View
           style={{
@@ -228,45 +399,45 @@ const campaignDetails = () => {
 
 
 
-<View
-  style={{
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 6,
-    borderRadius: 25,
-    backgroundColor: '#fff',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  }}
->
-  {campaignData.status && (
-    <>
-      <View
-        style={{
-          height: 8,
-          width: 8,
-          borderRadius: 5,
-          marginRight: 8,
-          backgroundColor: STATUS_COLORS[campaignData.status as keyof typeof STATUS_COLORS],
-        }}
-      />
-      <Text
-        style={{
-          fontSize: 10,
-          fontWeight: 'bold',
-          color:STATUS_COLORS[campaignData.status as keyof typeof STATUS_COLORS],
-          textTransform: 'uppercase',
-        }}
-      >
-        {campaignData.status}
-      </Text>
-    </>
-  )}
-</View>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 15,
+              paddingVertical: 6,
+              borderRadius: 25,
+              backgroundColor: '#fff',
+              elevation: 3,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+            }}
+          >
+            {campaign?.status && (
+              <>
+                <View
+                  style={{
+                    height: 8,
+                    width: 8,
+                    borderRadius: 5,
+                    marginRight: 8,
+                    backgroundColor: STATUS_COLORS[campaign?.status as keyof typeof STATUS_COLORS],
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 'bold',
+                    color: STATUS_COLORS[campaign?.status as keyof typeof STATUS_COLORS],
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {campaign?.status}
+                </Text>
+              </>
+            )}
+          </View>
 
         </View>
       </View>
@@ -276,93 +447,74 @@ const campaignDetails = () => {
 
       {/* Media Section */}
       <View style={{ marginTop: 20, paddingHorizontal: 20 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Photos</Text>
-        {imageLoading ? (
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              gap: 10
-            }}
-          >
-            <SkeletonLoader width={120} height={120} borderRadius={10} />
-            <SkeletonLoader width={120} height={120} borderRadius={10} />
-            <SkeletonLoader width={120} height={120} borderRadius={10} />
-          </View>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {images.map((image, index) => (
-              <View key={index} style={{ position: 'relative' }}>
-                <Image
-                  source={{ uri: image }}
-                  style={{
-                    width: 120,
-                    height: 120,
-                    borderRadius: 10,
-                    marginRight: 10,
-                    borderWidth: 2,
-                    borderColor: '#f0f0f0',
-                    overflow: 'hidden',
-                  }}
-                />
-                {/* Download Icon */}
-                <TouchableOpacity
-                  onPress={() => { handleDownload(image) }}
-                  style={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 20,
-                    backgroundColor: '#007bff',
-                    padding: 6,
-                    borderRadius: 20,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}
-                >
-                  <MaterialIcons name="file-download" size={12} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
-        )}
+        <View style={{ marginHorizontal: 10, marginBottom: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Photos</Text>
+          <TouchableOpacity onPress={() => { router.push("/(tabs)/explore/(campaign)/uploadMedia") }}>
+            <Text style={{ fontSize: 14, color: '#999', fontWeight: 600 }}>Upload Photos</Text>
+          </TouchableOpacity>
 
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginVertical: 10 }}>Videos</Text>
-        {videoLoading ? (
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              gap: 10
-            }}
-          >
-            <SkeletonLoader width={180} height={120} borderRadius={10} />
-            <SkeletonLoader width={180} height={120} borderRadius={10} />
-            <SkeletonLoader width={180} height={120} borderRadius={10} />
-          </View>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
 
-            {videos.map((video, index) => (
-              <View
-                key={index}
-                style={{
-                  width: 180,
-                  height: 120,
-                  backgroundColor: '#6c757d',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderRadius: 10,
-                  marginRight: 10,
-                }}
-              >
-                <Text style={{ color: 'white', fontSize: 16 }}>Video {index + 1}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        )}
+
+        </View>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={images}
+          keyExtractor={(item: any) => item._id}
+          onEndReached={()=>{
+               
+               if(moreImage){
+                console.log('End reached')
+              fetchCampaignImages();
+               }
+            
+            }}
+            onEndReachedThreshold={0.8}
+          renderItem={({ item }) => (
+            <View style={{ margin: 5 }}>
+              {imageLoading ? renderPhotoSkeleton() : renderPhoto({ item })}
+            </View>
+          )}
+
+
+          contentContainerStyle={{
+            padding: 10,
+          }}
+        />
+
+
+
+        <View style={{ marginHorizontal: 10, marginVertical: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', }}>Videos</Text>
+          <TouchableOpacity onPress={() => { router.push("/(tabs)/explore/(campaign)/uploadMedia") }}>
+            <Text style={{ fontSize: 14, color: '#999', fontWeight: 600 }}>Upload Videos</Text>
+          </TouchableOpacity>
+
+
+        </View>
+        <FlatList
+          data={videos}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item: any) => item._id}
+          onEndReached={()=>{
+               
+            if(moreVideo){
+             console.log('End reached video')
+             fetchCampaignVideos();
+            }
+         
+         }}
+         onEndReachedThreshold={0.8}
+          renderItem={({ item }) => (
+            <View style={{ flex: 1, margin: 3 }}>
+              {videoLoading ? renderVideoSkeleton() : renderVideo({ item })}
+            </View>
+          )}
+          horizontal
+          contentContainerStyle={{
+            padding: 10,
+          }}
+        />
       </View>
       <View
         style={{
@@ -411,7 +563,12 @@ const campaignDetails = () => {
                 <Text
                   style={{ fontSize: 14, fontWeight: "600", color: "#000", marginTop: 3 }}
                 >
-                  {campaignData?.startDate}
+                  {campaign?.startDate &&
+                    new Intl.DateTimeFormat('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    }).format(new Date(campaign?.startDate))}
                 </Text>
               </View>
             </View>
@@ -424,7 +581,13 @@ const campaignDetails = () => {
                 <Text
                   style={{ fontSize: 14, fontWeight: "600", color: "#000", marginTop: 3 }}
                 >
-                  {campaignData?.endDate}
+
+                  {campaign?.endDate &&
+                    new Intl.DateTimeFormat('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    }).format(new Date(campaign?.endDate))}
                 </Text>
               </View>
             </View>
@@ -449,7 +612,7 @@ const campaignDetails = () => {
                   textAlign: 'center',
                 }}
               >
-                ₹{campaignData.collectedAmount}
+                ₹{campaign?.collectedAmount}
               </Text>
               <Text
                 style={{
@@ -469,7 +632,7 @@ const campaignDetails = () => {
                   textAlign: 'center',
                 }}
               >
-                ₹{campaignData.targetAmount}
+                ₹{campaign?.targetAmount}
               </Text>
             </View>
 
@@ -530,7 +693,7 @@ const campaignDetails = () => {
                   color: '#333',
                 }}
               >
-                {campaignData.location}
+                {campaign?.location}
               </Text>
             </View>
           </View>
@@ -572,7 +735,7 @@ const campaignDetails = () => {
                   lineHeight: 22,
                 }}
               >
-                {campaignData.description}
+                {campaign?.description}
               </Text>
             </View>
           </View>
@@ -611,6 +774,75 @@ const campaignDetails = () => {
           <Text style={{ color: 'white', fontSize: 14, textAlign: "center" }}>Donate Now</Text>
         </TouchableOpacity>
       </View>
+       {modalVisible && selectedImage && (
+              <Modal
+                visible={modalVisible}
+                transparent={true}
+                onRequestClose={closeImageModal}
+                animationType="fade"
+              >
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+                  <View style={{ width: .9 * width, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: 20, borderRadius: 10 }}>
+                    {selectedImage && (
+                      <Animated.Image
+                        source={{ uri: selectedImage }}
+                        style={{
+                          width: width - 60,
+                          height: width - 60,
+                          borderRadius: 10,
+                          marginBottom: 15,
+                          transform: [{ scale: scaleValue }],
+                        }}
+                      />
+                    )}
+      
+      
+                    <TouchableOpacity onPress={closeImageModal} style={{ backgroundColor: '#31d1c9', padding: 10, borderRadius: 20 }}>
+                      <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Close</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            )}
+      
+            {modalVisible && selectedVideo && (
+              <Modal
+                visible={modalVisible}
+                transparent={true}
+                onRequestClose={closeVideoModal}
+                animationType="fade"
+              >
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+                  <View style={{ width: .9 * width, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: 20, borderRadius: 10 }}>
+      
+      
+                    {selectedVideo && (
+                      <Animated.View
+                        style={{
+                          width: width - 60,
+                          height: 200,
+                          borderRadius: 10,
+                          marginBottom: 15,
+                          transform: [{ scale: scaleValue }],
+                        }}
+                      >
+                        <Video
+                          source={{ uri: selectedVideo }}
+                          style={{ width: '100%', height: '100%' }}
+                          useNativeControls
+                          resizeMode={ResizeMode.CONTAIN}
+      
+                        />
+      
+                      </Animated.View>
+                    )}
+                    <TouchableOpacity onPress={closeImageModal} style={{ backgroundColor: '#31d1c9', padding: 10, borderRadius: 20 }}>
+                      <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Close</ThemedText>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </Modal>
+            )}
     </ScrollView>
   );
 };

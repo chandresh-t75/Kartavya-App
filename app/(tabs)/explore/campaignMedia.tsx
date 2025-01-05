@@ -1,5 +1,5 @@
 import { ThemedText } from '@/components/ThemedText';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { ResizeMode, Video } from 'expo-av';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LeftArrow from "../../../assets/images/left-black-arrow.svg"
 import { useRouter } from 'expo-router';
+import axios from 'axios';
 
 
 
@@ -82,6 +83,80 @@ export default function campaignMedia() {
   const [photoLoading, setPhotoLoading] = useState(false);
   const [videoLoading, setVideoLoading] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+const [moreImage, setMoreImage] = useState(true);
+  const [moreVideo, setMoreVideo] = useState(true);
+  const [imgPage, setImgPage] = useState(1)
+  const [videoPage, setVideoPage] = useState(1)
+  const [images, setImages] = useState<string[]>([]);
+  const [videos, setVideos] = useState<string[]>([]);
+  const [imageLoading, setImageLoading] = useState(true);
+  
+  
+  const { width, height } = Dimensions.get("window")
+
+  const fetchCampaignImages = async () => {
+    if (!moreImage) return;
+    try {
+
+      setPhotoLoading(true);
+      await axios.get('http://192.168.43.243:5000/campaign/get-all-images', {
+        params: {
+          page: imgPage,
+          limit: 10,
+        }
+      }).then(
+        (response) => {
+          setImgPage(imgPage + 1);
+          if (response.data.length < 10) setMoreImage(false);
+          setImages([...images, ...response.data]);
+          setPhotoLoading(false);
+        }
+      )
+
+    } catch (error) {
+      console.error(error);
+      setPhotoLoading(false)
+
+    }
+
+  }
+
+  const fetchCampaignVideos = async () => {
+    if (!moreVideo) return;
+    try {
+
+      setVideoLoading(true);
+      await axios.get('http://192.168.43.243:5000/campaign/get-all-videos', {
+        params: {
+        
+          page: videoPage,
+          limit: 10,
+        }
+      }).then(
+        (response) => {
+          setVideoPage(videoPage + 1);
+          if (response.data.length < 10) setMoreVideo(false);
+          setVideos([...videos, ...response.data]);
+          setVideoLoading(false);
+        }
+      )
+
+    } catch (error) {
+      console.error(error);
+      setVideoLoading(false);
+
+    }
+
+  }
+
+
+
+  useEffect(() => {
+    
+
+    fetchCampaignImages()
+    fetchCampaignVideos()
+  }, []);
 
 
   const handleImageLoad = () => {
@@ -126,11 +201,11 @@ export default function campaignMedia() {
       <View style={{ width: width / 3 - 20, height: 120, borderRadius: 10, backgroundColor: '#e0e0e0' }} />
     );
   };
-  const renderPhoto = ({ item }: { item: Photo }) => (
-    <TouchableOpacity style={{ borderRadius: 10, overflow: 'hidden' }}
-      onPress={() => openImageModal(item?.uri)}>
+  const renderPhoto = ({ item }:any) => (
+    <TouchableOpacity key={item._id} style={{ borderRadius: 10, overflow: 'hidden' }}
+      onPress={() => openImageModal(item?.url)}>
       <Image
-        source={{ uri: item?.uri }}
+        source={{ uri: item?.url }}
         style={{ width: width / 3 - 20, height: 120, borderRadius: 10, resizeMode: 'cover' }}
         onLoad={handleImageLoad}
       />
@@ -167,37 +242,37 @@ export default function campaignMedia() {
     }, 300); // Delay to allow the animation to complete
   };
 
-  const renderVideoSkeleton = () => (
+    const renderVideoSkeleton = () => (
 
-    <View style={{ width: width / 3 - 20, height: 120, borderRadius: 10, backgroundColor: '#e0e0e0' }} />
+      <View style={{ width: width / 3 - 20, height: 120, borderRadius: 10, backgroundColor: '#e0e0e0' }} />
 
-  );
+    );
 
-  const renderVideo = ({ item }: any) => (
-    <TouchableOpacity key={item?.uri} style={{ borderRadius: 10, overflow: 'hidden' }} onPress={() => openVideoModal(item?.uri)}>
-      <View
-        style={{
+    const renderVideo = ({ item }: any) => (
+      <TouchableOpacity key={item?._id} style={{ borderRadius: 10, overflow: 'hidden' }} onPress={() => openVideoModal(item?.url)}>
+        <View
+          style={{
 
-          alignItems: 'center',
+            alignItems: 'center',
 
-        }}
-      >
-
-
-        <Video
-          source={{ uri: item?.uri }}
-          style={{ width: width / 3 - 10, height: 100, borderRadius: 10, backgroundColor: "#000" }}
-          useNativeControls
-          onLoad={handleVideoLoad}
-          // resizeMode="contain"
-          resizeMode={ResizeMode.CONTAIN}
+          }}
+        >
 
 
+          <Video
+            source={{ uri: item?.url}}
+            style={{ width: width / 3 - 10, height: 100, borderRadius: 10, backgroundColor: "#000" }}
+            useNativeControls
+            onLoad={handleVideoLoad}
+            // resizeMode="contain"
+            resizeMode={ResizeMode.CONTAIN}
 
-        />
-      </View>
-    </TouchableOpacity>
-  );
+
+
+          />
+        </View>
+      </TouchableOpacity>
+    );
 
   return (
     <SafeAreaView
@@ -279,10 +354,10 @@ export default function campaignMedia() {
       {/* Content */}
       {activeTab === 'photos' ? (
         <FlatList
-          data={photos}
-          keyExtractor={(item) => item.id}
+          data={images}
+          keyExtractor={(item:any) => item._id}
 
-          renderItem={({ item }) => (
+          renderItem={({ item }:any) => (
             <View style={{ flex: 1, margin: 5 }}>
               {photoLoading ? renderPhotoSkeleton() : renderPhoto({ item })}
             </View>
@@ -298,7 +373,7 @@ export default function campaignMedia() {
       ) : (
         <FlatList
           data={videos}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item:any) => item._id}
           renderItem={({ item }) => (
             <View style={{ flex: 1, margin: 3 }}>
               {videoLoading ? renderVideoSkeleton() : renderVideo({ item })}
