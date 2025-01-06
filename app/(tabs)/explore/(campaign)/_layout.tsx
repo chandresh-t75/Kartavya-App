@@ -10,6 +10,8 @@ export default function RootLayout() {
             {/* <Stack.Screen name="(campaign)/index" /> */}
             <Stack.Screen name="campaignDetails" />
             <Stack.Screen name="uploadMedia" />
+            <Stack.Screen name="updateCampaign" />
+
 
         </Stack>
     );

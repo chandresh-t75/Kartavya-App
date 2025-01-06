@@ -19,7 +19,7 @@ import EventPhotos from '@/components/utils/EventsPhotos';
 import EventVideos from '@/components/utils/EventVideos';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
-import { setCampaigns } from '@/redux/reducers/campaignSlice';
+import { setCampaigns, setSelectedCampaign } from '@/redux/reducers/campaignSlice';
 import { useSelector } from 'react-redux';
 
 
@@ -122,7 +122,7 @@ export default function Donate() {
   ]
 
   const handleEventPress = (event: Event) => {
-    const eventData = JSON.stringify(event); 
+    dispatch(setSelectedCampaign(event))
     router.push(`/(tabs)/donate/(camapigndonation)`); 
   };
 
@@ -322,7 +322,7 @@ export default function Donate() {
                             }
 
             </ThemedView>
-            <ThemedView style={{marginVertical:10}}>
+            <ThemedView style={{marginVertical:10,paddingBottom:50}}>
               <ThemedText style={{textAlign:"center",fontSize:12}}>Or</ThemedText>
               <ThemedText style={{textAlign:"center",fontWeight:700}}>Scan To Donate Directly</ThemedText>
               <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>

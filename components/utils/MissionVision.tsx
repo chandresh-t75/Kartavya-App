@@ -13,10 +13,10 @@ const MissionVision = (props: Props) => {
     const navigation = useNavigation();
     return (
         <ThemedView style={{ paddingHorizontal: 0,  }}>
-            <ThemedView style={{ paddingHorizontal: 20, marginVertical: 20, paddingVertical: 20 ,backgroundColor:lightBlue}}>
-                <ThemedText type="subtitle" style={{ color: "#201658", marginBottom: 10 }}>About Us</ThemedText>
+            <ThemedView style={{ paddingHorizontal: 20, marginVertical: 20, paddingVertical: 20 }}>
+                <ThemedText type="subtitle" style={{ color: "#31d1c9", marginBottom: 10 }}>About Us</ThemedText>
                 <ThemedText type="default" style={{ color: "#EC8305" }}>To create a world where people are empowered to make a difference, by giving, change, and making impact.</ThemedText>
-                <ThemedView style={{ flex: 1, flexDirection: "row", gap: 20, marginTop: 10, alignContent: "center",backgroundColor:lightBlue }}>
+                <ThemedView style={{ flex: 1, flexDirection: "row", gap: 20, marginTop: 10, alignContent: "center" }}>
                     <Link
                         href="/explore"
                         style={{
@@ -26,22 +26,41 @@ const MissionVision = (props: Props) => {
                             borderRadius: 50,
                             justifyContent: "center",
                             alignItems: "center",
+                            shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 4,
+                          elevation: 10,
+                          marginBottom:4,
                         }}
                     >
-                        <ThemedText type="defaultSemiBold" style={{ color: "#000" }}>
+                        <ThemedText type="defaultSemiBold" style={{ color: "#fff" }}>
                             Explore Us
                         </ThemedText>
                     </Link>
 
                     <Link
-                        href="/donate" style={{ paddingVertical: 8, paddingHorizontal: 16, backgroundColor: "#A25772", borderRadius: 50, justifyContent: "center", alignItems: "center" }}>
+                        href="/donate" style={{ 
+                            paddingVertical: 8,
+                             paddingHorizontal: 16,
+                         backgroundColor: "#da7399", 
+                         borderRadius: 50, 
+                         justifyContent: "center",
+                          alignItems: "center" ,
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 4,
+                          elevation:10,
+                          marginBottom:4,
+                          }}>
                         <ThemedText type="defaultSemiBold" style={{ color: "#fff" }}>Donate Us</ThemedText>
                     </Link>
 
                 </ThemedView>
 
             </ThemedView>
-            <ThemedView style={{ gap: 20, paddingVertical: 20, backgroundColor:lightPurple }}>
+            <ThemedView style={{ gap: 20, paddingVertical: 20, }}>
                 <Animatable.View animation="pulse" iterationCount="infinite" iterationDelay={500} direction="alternate" style={{ backgroundColor: "#F9E2AF", width: 300, paddingHorizontal: 20, paddingVertical: 4, borderBottomEndRadius: 20, borderTopEndRadius: 20 }} >
                     <ThemedText type="subtitle" style={{ color: "#201658" }}>Our Slogan</ThemedText>
                     <ThemedText type="default" style={{ color: "#201658" }}>Give,Change Lives, Makes Impact</ThemedText>

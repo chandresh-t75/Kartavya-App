@@ -16,6 +16,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { ResizeMode, Video } from 'expo-av';
 import { ThemedText } from '@/components/ThemedText';
+import { setSelectedCampaign } from '@/redux/reducers/campaignSlice';
 
 
 const STATUS_COLORS = {
@@ -49,6 +50,8 @@ const campaignDetails = () => {
   // const [videoLoading, setVideoLoading] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const { width, height } = Dimensions.get("window")
+    const user = useSelector((state: any) => state.userData.userDetails);
+  
   const handleImageLoad = () => {
     setPhotoLoading(false);
   };
@@ -155,7 +158,9 @@ const campaignDetails = () => {
     console.log(progress);
     
     setProgressPercent(progress);
-
+    if(user?._id){
+    isLikedCampaign();
+    }
     fetchCampaignImages()
     fetchCampaignVideos()
   }, []);
@@ -314,6 +319,48 @@ const campaignDetails = () => {
   );
 
 
+  const isLikedCampaign=async()=>{
+    try {
+      const response=await axios.post('http://192.168.43.243:5000/campaign/is-liked', {
+        userId:user?._id,
+        campaignId: campaign?._id,
+      });
+      // console.log(response.data);
+      setLiked(response.data.isLiked);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+
+  
+
+  const likeCampaign=async()=>{
+    try {
+      const response=await axios.post('http://192.168.43.243:5000/campaign/like-campaign', {
+        userId:user?._id,
+        campaignId: campaign?._id,
+      });
+      dispatch(setSelectedCampaign(response.data))
+      setLiked(true);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const unlikeCampaign=async()=>{
+    try {
+      const response=await axios.post('http://192.168.43.243:5000/campaign/unlike-campaign', {
+        userId:user?._id,
+        campaignId: campaign?._id,
+      });
+      dispatch(setSelectedCampaign(response.data))
+      setLiked(false);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
 
 
 
@@ -362,7 +409,14 @@ const campaignDetails = () => {
             right: 30,
             zIndex: 100,
           }}
-          onPress={() => setLiked(!liked)}
+          onPress={() => {if(user?._id){
+            if(liked){
+              unlikeCampaign()
+            }else{
+              likeCampaign()
+            }
+          }}
+        }
         >
           {
             liked && <RedLike width={24} height={24} />
@@ -769,7 +823,30 @@ const campaignDetails = () => {
             shadowRadius: 10,
             elevation: 5,
           }}
-          onPress={() => router.push("/(tabs)/donate")}
+          onPress={() => router.push("/(tabs)/explore/(campaign)/updateCampaign")}
+        >
+          <Text style={{ color: 'white', fontSize: 14, textAlign: "center" }}>Update</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            width: 150,
+            backgroundColor: "#31d1c9",
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderRadius: 20,
+            shadowColor: "#000",
+            shadowOpacity: 0.5,
+            shadowOffset: {
+              width: 0,
+              height: 4,
+            },
+            shadowRadius: 10,
+            elevation: 5,
+          }}
+          onPress={() => {
+         
+            router.push(`/(tabs)/donate/(camapigndonation)`); 
+          }}
         >
           <Text style={{ color: 'white', fontSize: 14, textAlign: "center" }}>Donate Now</Text>
         </TouchableOpacity>

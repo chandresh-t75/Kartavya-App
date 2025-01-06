@@ -4,10 +4,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolWeight } from 'expo-symbols';
 import React from 'react';
 import { OpaqueColorValue, StyleProp, TextStyle, ViewStyle } from 'react-native';
-import Home from "../../assets/images/home.svg"
-import Explore from "../../assets/images/explore.svg"
-import Profile from "../../assets/images/profile.svg"
-import Member from "../../assets/images/member.svg"
+
 
 
 
@@ -15,10 +12,10 @@ import Member from "../../assets/images/member.svg"
 const MAPPING = {
   // MaterialIcons mappings for different tabs
   'house.fill': 'home', // Home icon
-  'paperplane.fill': 'send', // Explore icon
+  'paperplane.fill': 'travel-explore', // Explore icon
   'heart.fill': 'favorite', // Donate icon
-  'user.fill': 'person', // Profile icon
-  'phone.fill': 'phone', // Contact icon
+  'user.fill': 'person-pin', // Profile icon
+  'phone.fill': 'group-add', // Contact icon
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
 } as Partial<

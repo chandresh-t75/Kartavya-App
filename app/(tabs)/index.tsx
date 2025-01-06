@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ScrollView,
+  View,
 } from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
@@ -27,15 +28,16 @@ import { setUserDetails } from "@/redux/reducers/userDataSlice";
 import axios from "axios";
 import { setCampaigns } from "@/redux/reducers/campaignSlice";
 import { useSelector } from "react-redux";
-
-const Logo="https://res.cloudinary.com/doagrwjza/image/upload/v1733722707/kartavya_lpt1hh.png"
+import Ionicons from '@expo/vector-icons/Ionicons';
+const Logo = "https://res.cloudinary.com/doagrwjza/image/upload/v1733722707/kartavya_lpt1hh.png"
 
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { width } = Dimensions.get("window");
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
   const campaigns = useSelector((state: any) => state.campaign.campaigns);
+  const user = useSelector((state: any) => state.userData.userDetails)
 
 
 
@@ -44,23 +46,23 @@ export default function HomeScreen() {
       try {
         // Get user data from AsyncStorage
         const storedUserData = await AsyncStorage?.getItem('userDetails');
-        
+
         // If user data exists, parse it and log to console
         if (storedUserData !== null) {
           const userData = JSON.parse(storedUserData);
-          await axios.get("http://192.168.43.243:5000/user/get-user",{
-            params:{
-              userId:userData._id
+          await axios.get("http://192.168.43.243:5000/user/get-user", {
+            params: {
+              userId: userData?._id
             }
-          }).then(async(response) => {
-           
+          }).then(async (response) => {
+
             dispatch(setUserDetails(response.data));
             await AsyncStorage.setItem("userDetails", JSON.stringify(response.data));
-           
+
 
 
           })
-          
+
         } else {
           console.log('No user data found in AsyncStorage');
         }
@@ -68,29 +70,29 @@ export default function HomeScreen() {
         console.error('Error checking user data in AsyncStorage:', error);
       }
     };
-  
+
     checkUserData();
   }, []);
 
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchCampaigns("All");
-    
-  },[])
 
-  const fetchCampaigns = async (status:string) => {
+  }, [])
+
+  const fetchCampaigns = async (status: string) => {
     try {
-      await axios.get('http://192.168.43.243:5000/campaign/get-all-campaigns',{
-        params:{
-          status:status
+      await axios.get('http://192.168.43.243:5000/campaign/get-all-campaigns', {
+        params: {
+          status: status
         }
       }).then(
-        (response)=>{
+        (response) => {
 
           dispatch(setCampaigns(response.data));
         }
       )
-      
+
     } catch (error) {
       console.error('Error:', error);
     }
@@ -99,64 +101,154 @@ export default function HomeScreen() {
 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white", width: width }}>
+    <SafeAreaView style={{ flex: 1, width: width, backgroundColor: "#fff" }}>
       <ScrollView>
         <ThemedView style={{}}>
+
           <ThemedView
             style={{
+              width: width,
               flexDirection: "row",
-              justifyContent: "center",
+              padding: 20,
+              backgroundColor: "#fff",
+              justifyContent: "space-between",
               alignItems: "center",
-              paddingTop: 10,
-              paddingBottom: 10,
-              paddingHorizontal: 20,
+              gap: 14,
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 4,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 8,
               borderBottomWidth: 1,
-              borderBottomColor: "#e7e7e7",
-              backgroundColor:lightBlue
+              borderBottomColor: "#f0f0f0",
+              borderBottomEndRadius: 20,
+              borderBottomStartRadius: 20,
+              marginBottom: 4
+
 
             }}
-          >
-            <ThemedView
-              style={{ flexDirection: "row", justifyContent: "center", gap: 14, backgroundColor:lightBlue }}
-              className=" flex flex-row justify-center items-center"
-            >
-              <Image
-                source={{uri:Logo}}
-                style={{ width: 50, height: 50, borderRadius: 50,  }}
-              />
-              <ThemedView style={{ gap: 0,backgroundColor:lightBlue }}>
-                <ThemedText type="title" className="text-[#31d1c9]">
-                  KARTAVYA
-                </ThemedText>
-                <ThemedText style={{ marginTop: -10, fontSize: 12, color: "#777474" }}>
-                  For the society
-                </ThemedText>
 
-              </ThemedView>
+          >
+            <View style={{
+              backgroundColor: "#fff",
+
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 4,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              padding: 1,
+              elevation: 5,
+              borderRadius: 50,
+
+            }}>
+              <Image
+                source={{ uri: Logo }}
+                style={{
+                  width: 40, height: 40,
+                  borderRadius: 50,
+
+                }}
+              />
+
+            </View>
+
+            <ThemedView
+              style={{ flexDirection: "row", gap: 4 }}>
+              <ThemedText style={{ fontSize: 16, fontWeight: 600 }}>
+                Hii!
+              </ThemedText>
+              <ThemedText style={{ color: "", fontSize: 18, fontWeight: 800 }}>
+                {user?._id ? `${user?.name.substring(0, 30)}` : "User"}
+              </ThemedText>
 
             </ThemedView>
+            <TouchableOpacity style={{
+              padding: 10,
+              backgroundColor: "#fff",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 50,
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+
+
+            }}>
+              <Ionicons name="notifications-circle-sharp" size={24} color="#31d1c9" />
+
+            </TouchableOpacity>
+
           </ThemedView>
-          <ThemedView style={{ paddingVertical: 10}}>
+
+
+
+
+          <ThemedView style={{
+            paddingVertical: 10,
+            borderTopEndRadius: 20,
+            borderTopStartRadius: 20,
+            // borderBottomEndRadius: 20,
+            // borderBottomStartRadius: 20,
+            // marginBottom:4,
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 4,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+            elevation: 8,
+          }}>
             <HomeSlider />
           </ThemedView>
-          <ThemedView style={{ padding: 20, }}>
-            <ThemedView style={{ flexDirection: "row", gap: 2 }}>
-              <ThemedText type="defaultSemiBold" style={{color:maroonColorLight}}>
-                Give,
+          <ThemedView style={{ padding: 20,justifyContent:"center" }}>
+           
+              <ThemedText type="defaultSemiBold" style={{ color: maroonColorLight,textAlign:"center" }}>
+                Give, Change Lives, Make Impact
               </ThemedText>
-              <ThemedText type="defaultSemiBold" style={{color:maroonColorLight}}>
-                Change Lives,
-              </ThemedText>
-              <ThemedText type="defaultSemiBold" style={{color:maroonColorLight}}>
-                Make Impact
-              </ThemedText>
-            </ThemedView>
           </ThemedView>
 
-          <ThemedView style={{}}>
+          <ThemedView style={{
+            // borderTopWidth:.5,
+            // borderBottomWidth:.5,
+            // borderColor: "#31d1c9",
+        
+            borderRadius:10,
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 2,
+              height: 4,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+            elevation:4,
+            marginVertical: 10,
+          }}>
             <OurDrives />
           </ThemedView>
-          <ThemedView style={{paddingBottom:20}}>
+          <ThemedView style={{
+             
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 2,
+              height: 4,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+            elevation:4,
+            marginBottom: 10,
+           }}>
             <MissionVision />
           </ThemedView>
         </ThemedView>

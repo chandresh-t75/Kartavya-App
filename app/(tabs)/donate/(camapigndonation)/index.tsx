@@ -3,12 +3,15 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } fro
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 const index = () => {
   const [amount, setAmount] = useState('');
   const [paymentUrl, setPaymentUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [transactionId, setTransactionId] = useState('');
+  const campaign=useSelector((state:any)=>state.campaign.selectedCampaign)
+  console.log(campaign?.title)
 
   const generateTransactionId = () => {
     return 'DONATION_' + Math.floor(Math.random() * 1000000000).toString();

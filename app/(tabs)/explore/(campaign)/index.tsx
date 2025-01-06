@@ -1,5 +1,5 @@
 import { Alert, Dimensions, Image, Modal, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import LeftArrow from "../../../../assets/images/left-arrow.svg"
 import ShareIcon from "../../../../assets/images/share.svg"
 import Like from "../../../../assets/images/like.svg"
@@ -12,6 +12,7 @@ import { formatDateTime } from '@/components/logics/formatDateTime'
 import { useDispatch } from 'react-redux'
 import { setSelectedCampaign } from '@/redux/reducers/campaignSlice'
 import { useSelector } from 'react-redux'
+import axios from 'axios'
 
 
 
@@ -30,17 +31,20 @@ interface Event {
 }
 const index = () => {
     const router = useRouter();
-    const dispatch=useDispatch();
+    const dispatch = useDispatch();
     const searchParams = useSearchParams();
     const [liked, setLiked] = useState(false)
 
-    const eventData = searchParams.get('eventData'); 
+    const eventData = searchParams.get('eventData');
 
-    const selectedEvent = useSelector((state:any)=>state.campaign.selectedCampaign)
+    const selectedEvent = useSelector((state: any) => state.campaign.selectedCampaign)
+    const campaign = useSelector((state: any) => state.campaign.selectedCampaign)
+    const user = useSelector((state: any) => state.userData.userDetails);
 
 
 
-    console.log(selectedEvent)
+
+    // console.log(selectedEvent)
 
     const { width, height } = Dimensions.get("window")
 
@@ -67,6 +71,58 @@ const index = () => {
             Alert.alert('Error', error.message);
         }
     };
+
+
+    const isLikedCampaign = async () => {
+        try {
+            const response = await axios.post('http://192.168.43.243:5000/campaign/is-liked', {
+                userId: user?._id,
+                campaignId: campaign?._id,
+            });
+            // console.log(response.data);
+            setLiked(response.data.isLiked);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+
+
+
+    const likeCampaign = async () => {
+        try {
+            const response = await axios.post('http://192.168.43.243:5000/campaign/like-campaign', {
+                userId: user?._id,
+                campaignId: campaign?._id,
+            });
+            dispatch(setSelectedCampaign(response.data))
+            setLiked(true);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const unlikeCampaign = async () => {
+        try {
+            const response = await axios.post('http://192.168.43.243:5000/campaign/unlike-campaign', {
+                userId: user?._id,
+                campaignId: campaign?._id,
+            });
+            dispatch(setSelectedCampaign(response.data))
+            setLiked(false);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    useEffect(() => {
+        if(user?._id){
+
+        isLikedCampaign();
+        }
+
+    }, []);
+
 
     return (
 
@@ -121,7 +177,15 @@ const index = () => {
                                     right: 30,
                                     zIndex: 100,
                                 }}
-                                onPress={() => setLiked(!liked)}
+                                onPress={() => {
+                                    if (user?._id) {
+                                        if (liked) {
+                                            unlikeCampaign()
+                                        } else {
+                                            likeCampaign()
+                                        }
+                                    }
+                                }}
                             >
                                 {
                                     liked && <RedLike width={24} height={24} />
@@ -367,7 +431,8 @@ const index = () => {
                                 <TouchableOpacity
                                     onPress={() => {
 
-                                        router.push("/(tabs)/donate")
+                                         dispatch(setSelectedCampaign(selectedEvent))
+                                            router.push(`/(tabs)/donate/(camapigndonation)`); 
                                     }}
                                     style={{
                                         backgroundColor: "#31d1c9",

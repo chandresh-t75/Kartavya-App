@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import { setUserBadges, setUserDetails } from '@/redux/reducers/userDataSlice';
+import { resetState, setUserBadges, setUserDetails } from '@/redux/reducers/userDataSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // Example user data
 interface User {
@@ -394,7 +394,7 @@ const ProfileScreen = () => {
 
       {/* Badges Section */}
       {
-        user &&
+        user?._id &&
         <View
           style={{
             backgroundColor: '#ffffff',
@@ -410,7 +410,7 @@ const ProfileScreen = () => {
         >
           <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15 }}>Badges Acquired</Text>
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {userBadges && userBadges?.map((badge: any) => (
+            {userBadges && userBadges?.length>0 && userBadges?.map((badge: any) => (
               <TouchableOpacity
                 key={badge?._id}
                 style={{
@@ -456,7 +456,7 @@ const ProfileScreen = () => {
 
       {/* Donations Section */}
       {
-        user &&
+        user?._id &&
         <View
           style={{
             backgroundColor: '#ffffff',
@@ -496,7 +496,7 @@ const ProfileScreen = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 10 }}
           >
-            {user && user?.donations && user?.donations.map(({ donation, index }: any) => (
+            {user?._id && user?.donations && user?.donations.map(({ donation, index }: any) => (
               <TouchableOpacity
                 key={index}
                 style={{
@@ -549,7 +549,7 @@ const ProfileScreen = () => {
       {/* Admin Panel Access */}
 
       {
-        user &&
+        user?._id &&
         <View
           style={{
             backgroundColor: '#ffffff',
@@ -597,7 +597,7 @@ const ProfileScreen = () => {
       }
 
       {
-        user &&
+        user?._id &&
         <View
           style={{
             backgroundColor: '#ffffff',
@@ -622,8 +622,10 @@ const ProfileScreen = () => {
               justifyContent: 'center',
               alignItems: 'center',
             }}
-            onPress={() => {
-              router.push("/(tabs)/profile/auth/signup")
+            onPress={async() => {
+              dispatch(resetState());
+              await AsyncStorage.removeItem('userDetails');
+              router.push("/")
             }}
           >
             <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold' }}>Logout</Text>

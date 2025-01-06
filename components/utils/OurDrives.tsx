@@ -21,19 +21,20 @@ const OurDrives = () => {
   const campaigns = useSelector((state: any) => state.campaign.campaigns);
 
     return (
-        <ThemedView style={{paddingVertical:10,backgroundColor:lightPurple}}>
-            <ThemedText type="subtitle" style={{ marginBottom: 10 ,paddingLeft: 20,color:"#201658" }}>Our Drives</ThemedText>
-            <ThemedView  style={{backgroundColor:lightPurple}}>
+        <ThemedView style={{paddingVertical:10,borderRadius:20}}>
+            <ThemedText type="subtitle" style={{ marginBottom: 10 ,paddingLeft:20,color:"#31d1c9" ,}}>Our Drives</ThemedText>
+            <ThemedView  style={{}}>
                 <ScrollView horizontal
                     showsHorizontalScrollIndicator={false}
-                    style={{paddingLeft:20,paddingRight:20}}>
+                    contentContainerStyle={{ paddingHorizontal: 20 }}
+                    >
                     {campaigns.map((campaign:any) => (
                         <TouchableOpacity 
                         onPress={()=>{
                              dispatch(setSelectedCampaign(campaign));
                                 router.push("/(tabs)/explore/(campaign)")
                         }}
-                        key={campaign._id} style={{ marginRight:20,flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                        key={campaign._id} style={{ marginRight:20,flexDirection: "column", justifyContent: "center", alignItems: "center",gap:10 }}>
                             <ThemedView style={{
                                 width: 200, height: 150, borderRadius: 16, overflow: 'hidden', justifyContent: "center", alignItems: "center",  // Required for shadows to render correctly
                                 shadowColor: "#000",
@@ -41,6 +42,7 @@ const OurDrives = () => {
                                 shadowOpacity: 0.3,
                                 shadowRadius: 6,
                                 elevation: 6,
+                            
                             }}>
                                 <Image
                                     source={{ uri: campaign.image }}

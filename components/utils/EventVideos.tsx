@@ -59,11 +59,11 @@ const EventVideos = ({ videos }: any) => {
         <View style={{ width: width / 2 - 20, height: 120, borderRadius: 10, backgroundColor: '#e0e0e0' }} />
     );
 
-    const renderVideo = (uri: string) => (
-        <TouchableOpacity key={uri} style={{ borderRadius: 10, overflow: 'hidden' }} onPress={() => openVideoModal(uri)}>
+    const renderVideo = (item:any) => (
+        <TouchableOpacity key={item?._id} style={{ borderRadius: 10, overflow: 'hidden' }} onPress={() => openVideoModal(item?.url)}>
             <View style={{ width: width / 2 - 20, height: 120, justifyContent: 'center', backgroundColor: "#000", alignItems: 'center' }}>
                 <Video
-                    source={{ uri: uri }}
+                    source={{ uri: item?.url }}
                     style={{ width: '100%', height: '100%' }}
                     useNativeControls
                     onLoad={handleVideoLoad}
@@ -91,7 +91,7 @@ const EventVideos = ({ videos }: any) => {
                 numColumns={2}
                 renderItem={({ item }) => (
                     <View style={{ flex: 1, margin: 5 }}>
-                        {loading ? renderSkeleton() : renderVideo(item?.url)}
+                        {loading ? renderSkeleton() : renderVideo(item)}
                     </View>
                 )}
                 ListEmptyComponent={

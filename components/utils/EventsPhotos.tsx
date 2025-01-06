@@ -70,7 +70,7 @@ const EventPhotos = ({images}:any) => {
 
     const renderImage = (uri: string) => {
         return (
-            <TouchableOpacity style={{ borderRadius: 10, overflow: 'hidden' }}
+            <TouchableOpacity key={uri} style={{ borderRadius: 10, overflow: 'hidden' }}
                 onPress={() => openImageModal(uri)}>
                 <Image
                     source={{ uri }}

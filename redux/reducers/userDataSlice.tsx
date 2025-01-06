@@ -22,11 +22,11 @@ const userDataSlice = createSlice({
       setMember: (state, action) => {
         state.member = action.payload;
       },
-     
+      resetState: () => initialState,
    
     
   },
 });
 
-export const { setUserDetails,setUserBadges,setMember} = userDataSlice.actions;
+export const { setUserDetails,setUserBadges,setMember,resetState} = userDataSlice.actions;
 export default userDataSlice.reducer;

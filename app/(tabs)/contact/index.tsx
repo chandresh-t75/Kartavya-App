@@ -60,29 +60,31 @@ const JoinCommunityScreen = () => {
   const [loading, setLoading] = useState(false);
   const member = useSelector((state: any) => state.userData.member);
   const user = useSelector((state: any) => state.userData.userDetails);
+  const [topMembers,setTopMembers] = useState([]);
 
 
   console.log("member", member);
-  const [topMembers] = useState<Member[]>([
-    {
-      name: 'Chandresh Prajapati',
-      email: 'john@example.com',
-      role: 'Admin',
-      profileImage: 'https://www.w3schools.com/w3images/avatar2.png',
-    },
-    {
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'Member',
-      profileImage: 'https://www.w3schools.com/w3images/avatar3.png',
-    },
-    {
-      name: 'Michael Lee',
-      email: 'michael@example.com',
-      role: 'Member',
-      profileImage: 'https://www.w3schools.com/w3images/avatar1.png',
-    },
-  ]);
+  // const [topMembers] = useState<Member[]>([
+  //   {
+  //     name: 'Chandresh Prajapati',
+  //     email: 'john@example.com',
+  //     role: 'Admin',
+  //     profileImage: 'https://www.w3schools.com/w3images/avatar2.png',
+  //   },
+  //   {
+  //     name: 'Jane Smith',
+  //     email: 'jane@example.com',
+  //     role: 'Member',
+  //     profileImage: 'https://www.w3schools.com/w3images/avatar3.png',
+  //   },
+  //   {
+  //     name: 'Michael Lee',
+  //     email: 'michael@example.com',
+  //     role: 'Member',
+  //     profileImage: 'https://www.w3schools.com/w3images/avatar1.png',
+  //   },
+  // ]);
+
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -164,20 +166,37 @@ const JoinCommunityScreen = () => {
         }
       }).then(
         (response) => {
-          console.log("member", response.data);
+          // console.log("member", response.data);
           dispatch(setMember(response.data));
 
         }
       )
 
     } catch (error) {
-      console.error('Error finding member:', error);
+      console.error('Error finding member here:', error);
     }
 
   }
 
+  const getEminentMembers=async()=>{
+    try {
+      await axios.get('http://192.168.43.243:5000/member/eminent-members')
+       .then(
+          (response) => {
+            // console.log("top members", response.data);
+            setTopMembers(response.data);
+          })
+        }
+         catch (error) {
+             console.error('Error fetching top members:', error);
+          }
+  }
+
   useEffect(() => {
+    getEminentMembers();
+    if(user?._id){
     fetchMember();
+    }
   }, [])
 
   return (
@@ -195,9 +214,9 @@ const JoinCommunityScreen = () => {
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={{ flexDirection: 'row', paddingLeft: 20, paddingBottom: 20, paddingTop: 5 }}>
-              {topMembers.map((member, index) => (
+              {topMembers && topMembers?.map((member:any) => (
                 <View
-                  key={index}
+                  key={member.id}
                   style={{
                     width: 120, height: 120,
                     flexDirection: 'column',
@@ -215,7 +234,7 @@ const JoinCommunityScreen = () => {
                   }}
                 >
                   <Image
-                    source={{ uri: member.profileImage }}
+                    source={{ uri: member.img }}
                     style={{ width: 50, height: 50, borderRadius: 50, marginBottom: 5 }}
                   />
                   <View>
@@ -230,7 +249,7 @@ const JoinCommunityScreen = () => {
 
         </View>
         {
-          member?.length === 0 && user &&
+          member?.length === 0 && user?._id &&
           <View>
 
 
@@ -447,7 +466,7 @@ const JoinCommunityScreen = () => {
         }
 
         {
-          member && user &&
+          member?._id && user?._id &&
           <MemberCard member={member} />
         }
 

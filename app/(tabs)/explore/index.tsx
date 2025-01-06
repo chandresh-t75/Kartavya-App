@@ -158,6 +158,10 @@ export default function TabTwoScreen() {
 
   useEffect(()=>{
     fetchCampaigns(activeTab);
+  
+  },[activeTab])
+  useEffect(()=>{
+ 
     fetchCampaignImages()
     fetchCampaignVideos()
   },[])
