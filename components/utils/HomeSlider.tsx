@@ -129,13 +129,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   pointer: {
-    width: 8,
-    height: 8,
+    width: 4,
+    height: 4,
     borderRadius: 4,
     backgroundColor: '#d3d3d3',
-    marginHorizontal: 5,
+    marginHorizontal: 3,
   },
   activePointer: {
-    backgroundColor: '#333',
+    backgroundColor: '#31c1c9',
   },
 });

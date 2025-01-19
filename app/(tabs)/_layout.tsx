@@ -27,10 +27,12 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
-          ios: {
+          ios:{
             position: 'absolute',
           },
-          default: {},
+          default: {
+            
+          },
         }),
         
         
@@ -125,10 +127,10 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     backgroundColor: '#fff', // Background color
-    borderWidth: 2,
-    borderColor: '#81e8e3',
+    borderWidth: 4,
+    borderColor: '#e7e7e7',
     
-    shadowColor: '#000',
+    shadowColor: '#bdbdbd',
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 5,

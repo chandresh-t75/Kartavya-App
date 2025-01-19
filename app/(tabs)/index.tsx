@@ -196,12 +196,12 @@ export default function HomeScreen() {
 
           <ThemedView style={{
             paddingVertical: 10,
-            borderTopEndRadius: 20,
+            borderRadius: 20,
             borderTopStartRadius: 20,
             // borderBottomEndRadius: 20,
             // borderBottomStartRadius: 20,
             // marginBottom:4,
-            shadowColor: "#000",
+            shadowColor: "#bdbdbd",
             shadowOffset: {
               width: 0,
               height: 4,
@@ -209,10 +209,17 @@ export default function HomeScreen() {
             shadowOpacity: 0.25,
             shadowRadius: 4,
             elevation: 8,
+            backgroundColor: "#fff",
+            marginBottom: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: "#f0f0f0",
           }}>
             <HomeSlider />
           </ThemedView>
-          <ThemedView style={{ padding: 20,justifyContent:"center" }}>
+          <ThemedView style={{ padding: 20,justifyContent:"center" ,
+            borderBottomLeftRadius: 20,
+            borderBottomRightRadius: 20,
+          }}>
            
               <ThemedText type="defaultSemiBold" style={{ color: maroonColorLight,textAlign:"center" }}>
                 Give, Change Lives, Make Impact
@@ -220,19 +227,6 @@ export default function HomeScreen() {
           </ThemedView>
 
           <ThemedView style={{
-            // borderTopWidth:.5,
-            // borderBottomWidth:.5,
-            // borderColor: "#31d1c9",
-        
-            borderRadius:10,
-            shadowColor: "#000",
-            shadowOffset: {
-              width: 2,
-              height: 4,
-            },
-            shadowOpacity: 0.25,
-            shadowRadius: 4,
-            elevation:4,
             marginVertical: 10,
           }}>
             <OurDrives />

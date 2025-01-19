@@ -17,41 +17,52 @@ import { useRouter } from 'expo-router'
 
 const OurDrives = () => {
     const dispatch = useDispatch();
-    const router=useRouter();
-  const campaigns = useSelector((state: any) => state.campaign.campaigns);
+    const router = useRouter();
+    const campaigns = useSelector((state: any) => state.campaign.campaigns);
 
     return (
-        <ThemedView style={{paddingVertical:10,borderRadius:20}}>
-            <ThemedText type="subtitle" style={{ marginBottom: 10 ,paddingLeft:20,color:"#31d1c9" ,}}>Our Drives</ThemedText>
-            <ThemedView  style={{}}>
+        <ThemedView style={{ paddingVertical: 10, borderRadius: 20 }}>
+            <ThemedText type="subtitle" style={{ marginBottom: 10, paddingLeft: 20, color: "#31d1c9", }}>Our Drives</ThemedText>
+            <ThemedView style={{}}>
                 <ScrollView horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: 20 }}
-                    >
-                    {campaigns.map((campaign:any) => (
-                        <TouchableOpacity 
-                        onPress={()=>{
-                             dispatch(setSelectedCampaign(campaign));
+                    contentContainerStyle={{ paddingHorizontal: 20 ,paddingBottom: 20 }}
+                >
+                    {campaigns.map((campaign: any) => (
+                        <TouchableOpacity
+                            onPress={() => {
+                                dispatch(setSelectedCampaign(campaign));
                                 router.push("/(tabs)/explore/(campaign)")
-                        }}
-                        key={campaign._id} style={{ marginRight:20,flexDirection: "column", justifyContent: "center", alignItems: "center",gap:10 }}>
-                            <ThemedView style={{
-                                width: 200, height: 150, borderRadius: 16, overflow: 'hidden', justifyContent: "center", alignItems: "center",  // Required for shadows to render correctly
-                                shadowColor: "#000",
-                                shadowOffset: { width: 0, height: 4 },
-                                shadowOpacity: 0.3,
-                                shadowRadius: 6,
-                                elevation: 6,
-                            
+                            }}
+                            key={campaign._id} 
+                            style={{
+                                // width: 200, 
+                                // height: 200,  
+                                marginRight: 20,
+                                flexDirection: "column",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                gap: 10,
+                                backgroundColor:"#fff",
+                                borderRadius: 16,
+                                shadowColor: "#bdbdbd",
+                                shadowOffset: {
+                                        width: 0,
+                                        height: 2, 
+                                        },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 4,
+                                    elevation: 5,        
+                                    padding: 10,
                             }}>
                                 <Image
                                     source={{ uri: campaign.image }}
-                                    width={200}
-                                    height={200}
+                                    width={220}
+                                    height={150}
                                     resizeMode="cover"
-                                    style={{borderRadius:16}}
+                                    style={{ borderRadius: 16 }}
                                 />
-                            </ThemedView>
+                            
                             <ThemedText type="defaultSemiBold" style={{ textAlign: "center" }}>
                                 {campaign.title}
                             </ThemedText>

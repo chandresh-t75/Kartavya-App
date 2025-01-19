@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, Animated, ScrollView, Share, View, Text, Image, Pressable, Dimensions, Alert, FlatList } from 'react-native';
+import { StyleSheet, TouchableOpacity, Animated, ScrollView, Share, View, Text, Image, Pressable, Dimensions, Alert, FlatList, Linking } from 'react-native';
 import Modal from 'react-native-modal'; // Import the modal
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -130,6 +130,20 @@ export default function Donate() {
     console.log(title);
   }
 
+  const UPI_PAYMENT_URL = 'upi://pay?pa=rebelkingsuperstar@okhdfcbank&pn=Chandresh&am=100&cu=INR&tn=Donation'; // Replace with your details
+
+const handleUPIPayment = async () => {
+  try {
+    const supported = await Linking.canOpenURL(UPI_PAYMENT_URL);
+    if (supported) {
+      // await Linking.openURL(UPI_PAYMENT_URL);
+    } else {
+      Alert.alert('Error', 'No UPI app found to handle the payment.');
+    }
+  } catch (error) {
+    Alert.alert('Error', 'Something went wrong while opening UPI.');
+  }
+};
 
 
 
@@ -326,9 +340,15 @@ export default function Donate() {
               <ThemedText style={{textAlign:"center",fontSize:12}}>Or</ThemedText>
               <ThemedText style={{textAlign:"center",fontWeight:700}}>Scan To Donate Directly</ThemedText>
               <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-                <Image 
-                source={require('../../../assets/images/qr-img.jpg')}
-                style={{ width: 100, height: 100 }} />
+              <TouchableOpacity
+        style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}
+        onPress={handleUPIPayment}
+      >
+        <Image
+          source={require('../../../assets/images/qr-img.jpg')}
+          style={{ width: 100, height: 100 }}
+        />
+      </TouchableOpacity>
               </View>
 
             </ThemedView>

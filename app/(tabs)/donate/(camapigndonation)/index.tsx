@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, Linking} from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -9,56 +9,82 @@ const index = () => {
   const [amount, setAmount] = useState('');
   const [paymentUrl, setPaymentUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [transactionId, setTransactionId] = useState('');
+  
   const campaign=useSelector((state:any)=>state.campaign.selectedCampaign)
   console.log(campaign?.title)
 
-  const generateTransactionId = () => {
-    return 'DONATION_' + Math.floor(Math.random() * 1000000000).toString();
-  };
+  const UPI_PAYMENT_URL = 'upi://pay?pa=rebelkingsuperstar@okhdfcbank&pn=Chandresh&am=100&cu=INR&tn=Donation'; // Replace with your details
 
   const initiatePayment = async () => {
-    if (!amount) {
-      Alert.alert('Error', 'Please enter an amount.');
-      return;
-    }
-    setIsLoading(true);
-    const txnId = generateTransactionId();
-    setTransactionId(txnId);
-
-   
-
     try {
-      const transactionId = `DONATE_${Date.now()}`;
-      const response = await axios.post('http://<YOUR_BACKEND_URL>/initiatePayment', {
-        amount: parseInt(amount) * 100, // Convert to paise
-        transactionId: txnId,
+      const response = await axios.post('http://192.168.43.243:5000/donate/initiate-payment', {
+        amount: '1',
+        note: 'Donation',
+        upiId: 'bestumeshverma1@oksbi',
+        payerName: 'Chandresh',
+        campaignId: campaign?._id,
       });
-
-      const { payload, checksum, url } = response.data;
-
-      const phonepePaymentUrl = `${url}?payload=${encodeURIComponent(
-        payload
-      )}&checksum=${checksum}`;
-
-      setPaymentUrl(phonepePaymentUrl);
-
+  
+      const { transactionId, upiUrl } = response.data;
+      console.log(response.data);
+  
+      // Open UPI App
+      const supported = await Linking.canOpenURL(upiUrl);
+      if (supported) {
+        await Linking.openURL(upiUrl);
+        // checkPaymentStatus(transactionId); 
+      } else {
+        Alert.alert('Error', 'No UPI app found to handle the payment.');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to initiate payment.');
-    } finally {
-      setIsLoading(false);
+      Alert.alert('Error', 'Something went wrong while initiating payment.');
+      console.error(error);
     }
   };
 
-  const handlePaymentCompletion = (event:any) => {
-    const { url } = event.nativeEvent;
 
-    if (url.includes('payment_success')) {
-      Alert.alert('Thank You!', 'Your donation was successful.');
-    } else if (url.includes('payment_failure')) {
-      Alert.alert('Failed', 'Payment failed.');
+  const checkPaymentStatus = async (transactionId:any) => {
+    try {
+      const response = await axios.post('http://192.168.43.243:5000/donate/verify-payment', {
+        transactionId,
+      });
+  
+      const { status } = response.data;
+  console.log("success",response.data);
+      if (status === 'success') {
+        Alert.alert('Payment Success', 'Thank you for your donation!');
+      } else {
+        Alert.alert('Payment Failed', 'Please try again.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong while verifying payment.');
+      console.error(error);
     }
   };
+
+  const handleDeepLink = async ({ url }:any) => {
+    const transactionId = extractTransactionId(url); // Parse transactionId from URL
+    if (transactionId) {
+      checkPaymentStatus(transactionId);
+    }
+  };
+  
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    return () => subscription.remove();
+  }, []);
+
+  const extractTransactionId = (url:any) => {
+    try {
+      const parsedUrl = new URL(url); // Parse the URL
+      console.log(parsedUrl);
+      return parsedUrl.searchParams.get('transactionId'); // Get the transactionId parameter
+    } catch (error) {
+      console.error('Error parsing URL:', error);
+      return null;
+    }
+  };
+  
 
   return (
     <View
@@ -69,8 +95,8 @@ const index = () => {
         justifyContent: 'center',
       }}
     >
-      {!paymentUrl ? (
-        <>
+     
+        <View>
           <View
             style={{
               backgroundColor: '#fff',
@@ -132,13 +158,14 @@ const index = () => {
                 width: '100%',
                 alignItems: 'center',
               }}
-              onPress={initiatePayment}
+              onPress={()=>{initiatePayment()}}
               disabled={isLoading}
             >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text
+             {
+               isLoading?(
+                 <ActivityIndicator size="large" color="#fff" />
+                 ) : (
+                  <Text
                   style={{
                     color: '#fff',
                     fontWeight: 'bold',
@@ -147,19 +174,15 @@ const index = () => {
                 >
                   Donate Now
                 </Text>
-              )}
+                 )
+               
+             }
+                
+              
             </TouchableOpacity>
           </View>
-        </>
-      ) : (
-        <WebView
-          source={{ uri: paymentUrl }}
-          onNavigationStateChange={handlePaymentCompletion}
-          style={{
-            marginTop: 20,
-          }}
-        />
-      )}
+       
+        </View>
     </View>
   );
 };

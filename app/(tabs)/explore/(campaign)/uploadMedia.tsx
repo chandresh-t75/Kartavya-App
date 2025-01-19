@@ -17,9 +17,9 @@ const UploadMedia = () => {
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       quality: 1,
-      aspect:[4, 3],
+      aspect: [4, 3],
       allowsMultipleSelection: true,
-      
+
       selectionLimit: 10,
     });
 
@@ -77,12 +77,12 @@ const UploadMedia = () => {
 
         formData.append(fieldName, {
           uri: file.uri,
-          name: `campaign_media_${Date.now()}_${Math.floor(Math.random() * 100000)}.jpg`,
+          name: `campaign_media_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
           type: fileType,
         } as any);
       });
 
-      await axios.post('c', formData, {
+      await axios.post('http://192.168.43.243:5000/upload/upload-media', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -129,8 +129,8 @@ const UploadMedia = () => {
           elevation: 6,
           alignItems: 'center',
           flexDirection: 'row',
-          gap:20
-          
+          gap: 20
+
         }}
       >
         {item.type.startsWith('image') ? (
@@ -179,45 +179,41 @@ const UploadMedia = () => {
           )
         )}
         <View>
-        <View style={{gap:10}}>
-         
-           <TouchableOpacity
-          onPress={() => handleRemoveMedia(index)}
-          style={{
-            backgroundColor: '#ff4d4d',
-            paddingVertical: 8,
-            paddingHorizontal: 20,
-            borderRadius: 8,
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Remove</Text>
-        </TouchableOpacity>
-          {uploadProgress[index] !== undefined ? (
-            <View style={{ marginTop: 8, width: 120}}>
-              <Text style={{ fontSize: 14, color: '#31d1c9', marginBottom: 4 }}>
-                {`Uploading ${uploadProgress[index]}%`}
-              </Text>
-              <View style={{ width: 120, height: 8, backgroundColor: '#ddd', borderRadius: 4 }}>
-                <View
-                  style={{
-                    height: '100%',
-                    backgroundColor: '#31d1c9',
-                    borderRadius: 4,
-                    width: `${uploadProgress[index]}%`,
-                  }}
-                />
-              </View>
-            </View>
-          ) : (
-            <Text style={{ fontSize: 14, color: '#31d1c9', marginBottom: 4 }}>Uploaded</Text>
-          )}
-        </View>
-       
+          <View style={{ gap: 10 }}>
 
+            <TouchableOpacity
+              onPress={() => handleRemoveMedia(index)}
+              style={{
+                backgroundColor: '#ff4d4d',
+                paddingVertical: 8,
+                paddingHorizontal: 20,
+                borderRadius: 8,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Remove</Text>
+            </TouchableOpacity>
+            {uploadProgress[index] !== undefined && (
+              <View style={{ marginTop: 8, width: 120 }}>
+                <Text style={{ fontSize: 14, color: '#31d1c9', marginBottom: 4 }}>
+                  {`Uploading ${uploadProgress[index]}%`}
+                </Text>
+                <View style={{ width: 120, height: 8, backgroundColor: '#ddd', borderRadius: 4 }}>
+                  <View
+                    style={{
+                      height: '100%',
+                      backgroundColor: '#31d1c9',
+                      borderRadius: 4,
+                      width: `${uploadProgress[index]}%`,
+                    }}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
         </View>
-       
-       
+
+
       </View>
     );
   };
@@ -273,14 +269,14 @@ const UploadMedia = () => {
 
         <TouchableOpacity
           style={{
-            backgroundColor: loading ? '#ccc' : uploadComplete?'green':'#31d1c9',
+            backgroundColor: loading ? '#ccc' : uploadComplete ? 'green' : '#31d1c9',
             padding: 15,
             borderRadius: 10,
             justifyContent: 'center',
             alignItems: 'center',
           }}
           onPress={handleSubmit}
-          disabled={loading || media.length === 0 || uploadComplete }
+          disabled={loading || media.length === 0 || uploadComplete}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
