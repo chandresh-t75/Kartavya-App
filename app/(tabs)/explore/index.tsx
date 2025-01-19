@@ -74,6 +74,7 @@ export default function TabTwoScreen() {
   const [videos, setVideos] = useState<string[]>([]);
   const [imageLoading, setImageLoading] = useState(true);
   const [videoLoading, setVideoLoading] = useState(false);
+  console.log(width);
 
   // const events: Event[] = [
   //   {
